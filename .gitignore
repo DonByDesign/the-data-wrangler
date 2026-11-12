@@ -1,0 +1,19 @@
+# Environments
+.venv/
+venv/
+
+# Secrets
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Data/Logs
+*.csv
+*.log
+
+# PDFs and Screenshots
+*.pdf
+*.png
+*.jpg
