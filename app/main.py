@@ -1,7 +1,7 @@
 import os
 import re
 import json
-from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
+from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.request
 
 # 1. Target Endpoint Config (Points straight to Supabase REST API)
@@ -117,9 +117,11 @@ class DataWranglerServer(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(response_payload).encode('utf-8'))
 
 def run():
-    server_address = ('127.0.0.1', 8000)
-    httpd = ThreadingHTTPServer(server_address, DataWranglerServer)
-    print("The Data Wrangler Native Engine running on http://127.0.0.1:8000...")
+    # Cloud Run provides the PORT environment variable, fallback to 8000 for local
+    port = int(os.environ.get("PORT", 8000))
+    server_address = ('0.0.0.0', port)
+    httpd = HTTPServer(server_address, DataWranglerServer)
+    print(f"The Data Wrangler Native Engine running on port {port}...")
     httpd.serve_forever()
 
 if __name__ == '__main__':
