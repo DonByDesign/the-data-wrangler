@@ -5,11 +5,11 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.request
 
 # 1. Target Endpoint Config (Points straight to Supabase REST API)
-SUPABASE_URL = "https://rezqalzphirvqoaycbkl.supabase.co"
-# Reads your Supabase anon/service API key safely from your terminal session
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://reqzqlzphirvqoaycbkl.supabase.co")
+# Reads your Supabase anon/service API key safely from your environment
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 
-MASTER_TOKEN = "WranglerSecureToken2026_NC"
+MASTER_TOKEN = os.getenv("WRANGLER_TOKEN", "WranglerSecureToken2026_NC")
 
 def sanitize_string(v: str) -> str:
     clean = re.sub(r"<[^>]*>", "", str(v))  # Mitigate XSS attacks
