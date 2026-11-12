@@ -32,9 +32,6 @@ A zero-dependency, high-performance data ingestion engine designed to validate, 
 * **Cloud Infrastructure:** Google Cloud Run (Serverless, Scale-to-Zero)
 * **CI/CD:** GitHub Actions
 
-## Business Context
-In South Africa, schools struggle with messy SA-SAMS data exports. *The Data Wrangler* provides a secure, lightweight API to ingest, clean, and centralize this data. The SaaS model targets at R2,000/school/month, with a highly defensible >99.5% gross margin due to the serverless, zero-dependency architecture.
-
 ## Local Development
 
 Because this project is entirely zero-dependency, running it locally takes seconds:
@@ -46,6 +43,18 @@ git clone https://github.com/DonByDesign/the-data-wrangler.git
 # 2. Set environment variables (Supabase URL & Key)
 $env:SUPABASE_URL="your-url"
 $env:SUPABASE_KEY="your-key"
+
+## The Real-World Problem
+In South Africa, schools use SA-SAMS (School Administration & Management System) to manage learner data. However, before this data can be uploaded to the Department of Basic Education's **DDD (Data Driven Districts)** dashboard, it must be manually validated using a desktop tool called Valistractor. 
+
+This process is manual, highly error-prone, and purely focused on compliance — it offers zero analytics or intervention strategies for the school itself. Furthermore, third-party Python dependencies (like Pydantic) often fail to compile on low-resource edge devices (like Android/Termux) due to missing Rust/C++ build tools.
+
+## The Solution
+**The Data Wrangler** is a headless, zero-dependency API that automates the SA-SAMS extraction, validation, and sanitization process. 
+1. **Automated Validation:** Replaces manual Valistractor red-flag hunting with automated regex validation (13-digit IDs, missing fields).
+2. **Security First:** Strips XSS and SQL injection payloads before data ever touches a database.
+3. **Actionable Analytics:** Syncs clean data to Supabase, enabling Looker Studio dashboards for principals to monitor attendance anomalies and academic interventions in real-time.
+4. **Edge-Ready:** By relying entirely on the Python Standard Library, the engine runs flawlessly on Cloud Run, edge servers, or Android devices (Termux) without compilation errors.
 
 # 3. Run the engine
 python app/main.py
