@@ -1,31 +1,54 @@
 import re
-from typing import List, Optional
-from pydantic import BaseModel, Field, field_validator
+from typing import List, Optional, Dict, Any
 
-class StudentRecord(BaseModel):
-    id_number: str = Field(..., description="South African National ID or Passport")
-    first_name: str = Field(..., min_length=2, max_length=50)
-    last_name: str = Field(..., min_length=2, max_length=50)
-    grade: int = Field(..., ge=1, le=12)
-    sba_mark: Optional[float] = Field(None, ge=0.0, le=100.0)
-    attendance_rate: float = Field(..., ge=0.0, le=1.0)
+def validate_and_sanitize_record(fields: List[str]) -> Dict[str, Any]:
+    """Validates and sanitizes a single row of SA-SAMS data using pure Python."""
+    
+    # 1. Validate ID Number (13 digits, strip whitespace)
+    id_number = re.sub(r"\s+", "", str(fields[0]))
+    if not re.match(r"^\d{13}$", id_number):
+        raise ValueError("ID must be exactly 13 digits. Blocked potential exploitation payload.")
 
-    @field_validator("id_number", mode="before")
-    @classmethod
-    def validate_id_number(cls, v: str) -> str:
-        clean_id = re.sub(r"\s+", "", str(v))
-        if not re.match(r"^\d{13}$", clean_id):
-            raise ValueError("ID must be exactly 13 digits. Blocked potential exploitation payload.")
-        return clean_id
+    # 2. Sanitize Names (Strip XSS/HTML and SQLi characters)
+    def sanitize_name(name_str: str, field_name: str) -> str:
+        clean = re.sub(r"<[^>]*>", "", str(name_str))      # Strip HTML tags
+        clean = re.sub(r"[;'\"]", "", clean)               # Strip SQL injection quotes
+        clean = clean.strip()
+        if not (2 <= len(clean) <= 50):
+            raise ValueError(f"{field_name} must be between 2 and 50 characters.")
+        return clean
 
-    @field_validator("first_name", "last_name", mode="before")
-    @classmethod
-    def sanitize_string(cls, v: str) -> str:
-        clean = re.sub(r"<[^>]*>", "", str(v))
-        clean = re.sub(r"[;'\"]", "", clean)
-        return clean.strip()
+    first_name = sanitize_name(fields[1], "First name")
+    last_name = sanitize_name(fields[2], "Last name")
 
-def wrangle_raw_payload(raw_lines: List[str]):
+    # 3. Validate Grade (1 to 12)
+    grade = int(fields[3])
+    if not (1 <= grade <= 12):
+        raise ValueError("Grade must be between 1 and 12.")
+
+    # 4. Validate SBA Mark (0 to 100, Optional)
+    sba_mark = None
+    if fields[4]:
+        sba_mark = float(fields[4])
+        if not (0.0 <= sba_mark <= 100.0):
+            raise ValueError("SBA mark must be between 0 and 100.")
+
+    # 5. Validate Attendance Rate (0.0 to 1.0)
+    attendance_rate = float(fields[5])
+    if not (0.0 <= attendance_rate <= 1.0):
+        raise ValueError("Attendance rate must be between 0.0 and 1.0.")
+
+    # Return the clean dictionary
+    return {
+        "id_number": id_number,
+        "first_name": first_name,
+        "last_name": last_name,
+        "grade": grade,
+        "sba_mark": sba_mark,
+        "attendance_rate": attendance_rate
+    }
+
+def wrangle_raw_payload(raw_lines: List[str]) -> Dict[str, Any]:
     validated_records = []
     error_logs = []
 
@@ -40,15 +63,8 @@ def wrangle_raw_payload(raw_lines: List[str]):
             continue
 
         try:
-            record = StudentRecord(
-                id_number=fields[0],
-                first_name=fields[1],
-                last_name=fields[2],
-                grade=int(fields[3]),
-                sba_mark=float(fields[4]) if fields[4] else None,
-                attendance_rate=float(fields[5])
-            )
-            validated_records.append(record.model_dump())
+            record = validate_and_sanitize_record(fields)
+            validated_records.append(record)
         except Exception as e:
             error_logs.append({"line": index + 1, "error": str(e)})
 
