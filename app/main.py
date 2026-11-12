@@ -77,21 +77,24 @@ class DataWranglerServer(BaseHTTPRequestHandler):
 
         for idx, line in enumerate(clean_lines):
             record, error = validate_row(line, idx + 1)
-            if record:
-                valid_records.append(record)
-            else:
-                errors.append({"error": error})
 
-        # 2. Transmit valid student records straight to Supabase REST engine
+
+        # Transmit valid student records straight to Supabase REST engine
         if valid_records and SUPABASE_KEY:
+            # Append the table path to the base URL!
+            target_url = f"{SUPABASE_URL}/rest/v1/sasams_students"
+            
+            # This print statement will show up in Render logs for debugging
+            print(f"DEBUG: Attempting to POST to {target_url}")
+
             req = urllib.request.Request(
-                SUPABASE_URL,
+                target_url,
                 data=json.dumps(valid_records).encode('utf-8'),
                 headers={
                     "apikey": SUPABASE_KEY,
                     "Authorization": f"Bearer {SUPABASE_KEY}",
                     "Content-Type": "application/json",
-                    "Prefer": "resolution=merge-duplicates"  # Cloud UPSERT mechanism
+                    "Prefer": "return=representation,resolution=merge-duplicates"
                 },
                 method="POST"
             )
