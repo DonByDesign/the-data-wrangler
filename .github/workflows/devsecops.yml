@@ -11,11 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
+      # Only run this on Pull Requests, not direct pushes to main
       - name: Run Dependency Review
+        if: github.event_name == 'pull_request'
         uses: actions/dependency-review-action@v3
 
+      # This runs every time and scans your Python code
       - name: Run Bandit Security Linter
         run: |
           pip install bandit
