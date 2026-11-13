@@ -107,8 +107,8 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"detail": f"Parse error: {str(e)}"}).encode('utf-8'))
             return
 
-        # Filter out bad lines
-        clean_lines = [l for l in raw_lines if "," in l and not l.startswith("------")]
+        # Filter out empty lines and split safely
+        clean_lines = [line.strip() for line in raw_lines if line.strip() and not line.startswith("------")]
 
         valid_records = []
         errors = []
