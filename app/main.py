@@ -1,7 +1,6 @@
 import os
 import re
 import json
-import cgi
 import io
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.request
@@ -54,6 +53,18 @@ def validate_row(line: str, index: int):
         "attendance_rate": att_float
     }, None
 
+def parse_multipart(body: bytes, boundary: str):
+    """A pure-python replacement for the deprecated cgi.FieldStorage"""
+    parts = body.split(f"--{boundary}".encode('utf-8'))
+    for part in parts:
+        # Look for the file upload part containing CSV text
+        if b"filename=" in part and b"\r\n\r\n" in part:
+            header_data, file_data = part.split(b"\r\n\r\n", 1)
+            # Remove trailing \r\n from the file payload
+            file_data = file_data.rstrip(b"\r\n")
+            return file_data.decode('utf-8', errors='ignore')
+    return ""
+
 class DataWranglerServer(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path != "/api/v1/ingest":
@@ -61,7 +72,6 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             self.end_headers()
             return
 
-        # Check API token
         token = self.headers.get("X-Wrangler-Token")
         if token != MASTER_TOKEN:
             self.send_response(403)
@@ -71,9 +81,8 @@ class DataWranglerServer(BaseHTTPRequestHandler):
 
         content_length = int(self.headers.get('Content-Length', 0))
         
-        # Security Check: Block huge payloads
         if content_length > MAX_UPLOAD_SIZE:
-            self.send_response(413) # Payload Too Large
+            self.send_response(413)
             self.end_headers()
             self.wfile.write(b'{"detail": "File exceeds 5MB limit."}')
             return
@@ -83,18 +92,14 @@ class DataWranglerServer(BaseHTTPRequestHandler):
         raw_lines = []
         try:
             content_type = self.headers.get('Content-Type', '')
+            
             if 'multipart/form-data' in content_type:
-                # Standard library way to parse file uploads
-                environ = {'REQUEST_METHOD': 'POST', 'CONTENT_TYPE': content_type, 'CONTENT_LENGTH': str(content_length)}
-                fs = cgi.FieldStorage(fp=io.BytesIO(raw_body), environ=environ, keep_blank_values=True)
-                
-                for field in fs.list:
-                    if field.filename:
-                        file_content = field.file.read().decode('utf-8', errors='ignore')
-                        raw_lines = file_content.splitlines()
-                        break
+                # Extract the boundary string (e.g., boundary=----WebKitFormBoundary...)
+                boundary = content_type.split("boundary=")[1].strip()
+                file_content = parse_multipart(raw_body, boundary)
+                raw_lines = file_content.splitlines()
             else:
-                # Fallback for raw CSV text
+                # Fallback for raw text CSV (like our python test script)
                 raw_lines = raw_body.decode('utf-8').splitlines()
         except Exception as e:
             self.send_response(400)
@@ -102,7 +107,7 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"detail": f"Parse error: {str(e)}"}).encode('utf-8'))
             return
 
-        # Filter out empty lines or bad headers
+        # Filter out bad lines
         clean_lines = [l for l in raw_lines if "," in l and not l.startswith("------")]
 
         valid_records = []
@@ -115,7 +120,7 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             else:
                 errors.append({"error": error})
 
-        # Transmit to Supabase REST engine
+        # Transmit to Supabase
         if valid_records and SUPABASE_KEY:
             target_url = f"{SUPABASE_URL}/rest/v1/sasams_students"
             req = urllib.request.Request(
