@@ -7,36 +7,37 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.request
 import urllib.error
 
+# 1. Target Endpoint Config
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://reqzqlzphirvqoaycbkl.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 MASTER_TOKEN = os.getenv("WRANGLER_TOKEN", "WranglerSecureToken2026_NC")
 
-# 1. Security: Limit max upload size to 5MB to prevent DoS
+# Security: Limit max upload size to 5MB to prevent DoS
 MAX_UPLOAD_SIZE = 5 * 1024 * 1024 
 
 def sanitize_string(v: str) -> str:
-    clean = re.sub(r"<[^>]*>", "", str(v))
-    clean = re.sub(r"[;'\"]", "", clean)
+    clean = re.sub(r"<[^>]*>", "", str(v))  # Mitigate XSS
+    clean = re.sub(r"[;'\"]", "", clean)    # Mitigate basic SQLi
     return clean.strip()
 
 def validate_row(line: str, index: int):
     fields = [f.strip() for f in line.split(",")]
     if len(fields) != 6:
-        return None, f"Line {index}: Expected 6 columns."
+        return None, f"Line {index}: Expected 6 columns, got {len(fields)}"
     
     id_num, first, last, grade, sba, att = fields
     
     if not re.match(r"^\d{13}$", id_num):
-        return None, f"Line {index}: ID must be 13 digits."
+        return None, f"Line {index}: ID must be exactly 13 digits."
         
     try:
         grade_int = int(grade)
         if not (1 <= grade_int <= 12):
-            return None, f"Line {index}: Grade 1-12."
+            return None, f"Line {index}: Grade must be 1-12."
             
         sba_float = float(sba) if sba else None
         if sba_float is not None and not (0.0 <= sba_float <= 100.0):
-            return None, f"Line {index}: SBA 0-100."
+            return None, f"Line {index}: SBA mark 0-100."
             
         att_float = float(att)
         if not (0.0 <= att_float <= 1.0):
@@ -60,6 +61,7 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             self.end_headers()
             return
 
+        # Check API token
         token = self.headers.get("X-Wrangler-Token")
         if token != MASTER_TOKEN:
             self.send_response(403)
@@ -78,7 +80,6 @@ class DataWranglerServer(BaseHTTPRequestHandler):
 
         raw_body = self.rfile.read(content_length)
         
-        # Parse multipart/form-data (File Upload)
         raw_lines = []
         try:
             content_type = self.headers.get('Content-Type', '')
@@ -88,12 +89,12 @@ class DataWranglerServer(BaseHTTPRequestHandler):
                 fs = cgi.FieldStorage(fp=io.BytesIO(raw_body), environ=environ, keep_blank_values=True)
                 
                 for field in fs.list:
-                    if field.filename: # Found the uploaded file
+                    if field.filename:
                         file_content = field.file.read().decode('utf-8', errors='ignore')
                         raw_lines = file_content.splitlines()
                         break
             else:
-                # Fallback for raw CSV text (our previous tests)
+                # Fallback for raw CSV text
                 raw_lines = raw_body.decode('utf-8').splitlines()
         except Exception as e:
             self.send_response(400)
@@ -101,9 +102,9 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"detail": f"Parse error: {str(e)}"}).encode('utf-8'))
             return
 
-        # Filter out empty lines or SA-SAMS header/footer junk
+        # Filter out empty lines or bad headers
         clean_lines = [l for l in raw_lines if "," in l and not l.startswith("------")]
-        
+
         valid_records = []
         errors = []
 
@@ -114,7 +115,7 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             else:
                 errors.append({"error": error})
 
-        # 2. Transmit valid student records straight to Supabase REST engine
+        # Transmit to Supabase REST engine
         if valid_records and SUPABASE_KEY:
             target_url = f"{SUPABASE_URL}/rest/v1/sasams_students"
             req = urllib.request.Request(
