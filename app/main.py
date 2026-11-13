@@ -3,6 +3,7 @@ import re
 import json
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.request
+import urllib.error
 
 # 1. Target Endpoint Config (Points straight to Supabase REST API)
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://reqzqlzphirvqoaycbkl.supabase.co")
@@ -76,16 +77,21 @@ class DataWranglerServer(BaseHTTPRequestHandler):
         
         print(f"DEBUG: clean_lines = {clean_lines}")
 
+        valid_records = []
+        errors = []
+
         for idx, line in enumerate(clean_lines):
             record, error = validate_row(line, idx + 1)
+            if record:
+                valid_records.append(record)
+            else:
+                errors.append({"error": error})
 
-
-        # Transmit valid student records straight to Supabase REST engine
+        # 2. Transmit valid student records straight to Supabase REST engine
         if valid_records and SUPABASE_KEY:
-            # Append the table path to the base URL!
+            # CRITICAL FIX: The URL must point to the table, not the root
             target_url = f"{SUPABASE_URL}/rest/v1/sasams_students"
             
-            # This print statement will show up in Render logs for debugging
             print(f"DEBUG: Attempting to POST to {target_url}")
 
             req = urllib.request.Request(
@@ -102,6 +108,14 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             try:
                 with urllib.request.urlopen(req) as response:
                     response.read()
+            except urllib.error.HTTPError as e:
+                error_body = e.read().decode('utf-8')
+                print(f"DEBUG: Supabase Error: {error_body}")
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({"detail": f"Cloud Sync Failed: {str(e)} - {error_body}"}).encode('utf-8'))
+                return
             except Exception as e:
                 self.send_response(500)
                 self.send_header("Content-Type", "application/json")
@@ -121,7 +135,7 @@ class DataWranglerServer(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(response_payload).encode('utf-8'))
 
 def run():
-    # Cloud Run provides the PORT environment variable, fallback to 8000 for local
+    # Render provides the PORT environment variable, fallback to 8000 for local
     port = int(os.environ.get("PORT", 8000))
     server_address = ('0.0.0.0', port)
     httpd = HTTPServer(server_address, DataWranglerServer)
