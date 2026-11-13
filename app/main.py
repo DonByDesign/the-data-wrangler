@@ -74,6 +74,7 @@ class DataWranglerServer(BaseHTTPRequestHandler):
         
         lines = raw_body.splitlines()
         clean_lines = [l for l in lines if "," in l and not l.startswith("------")]
+                print(f"DEBUG: clean_lines = {clean_lines}")
 
         valid_records = []
         errors = []
