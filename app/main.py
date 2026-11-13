@@ -68,6 +68,12 @@ class DataWranglerServer(BaseHTTPRequestHandler):
 
         content_length = int(self.headers.get('Content-Length', 0))
         raw_body = self.rfile.read(content_length).decode('utf-8')
+
+                content_length = int(self.headers.get('Content-Length', 0))
+        raw_body = self.rfile.read(content_length).decode('utf-8')
+        
+        # Add this print statement right here
+        print(f"DEBUG: Received raw body: '{raw_body}'")
         
         lines = raw_body.splitlines()
         clean_lines = [l for l in lines if "," in l and not l.startswith("------")]
