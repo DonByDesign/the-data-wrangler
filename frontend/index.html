@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Data Wrangler | SA-SAMS Pre-Flight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f7f6; color: #333; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+        .header h1 { margin: 0 0 10px 0; color: #2c3e50; font-size: 24px; }
+        .header p { color: #7f8c8d; font-size: 14px; margin-bottom: 30px; }
+        .drop-zone { border: 2px dashed #3498db; border-radius: 8px; padding: 40px 20px; cursor: pointer; transition: background 0.2s; background: #eaf2f8; }
+        .drop-zone:hover { background: #d4e6f1; }
+        .drop-zone p { margin: 0; color: #2980b9; font-weight: bold; }
+        .drop-zone input { display: none; }
+        .result-box { margin-top: 20px; display: none; text-align: left; max-height: 200px; overflow-y: auto; padding-right: 10px;}
+        .success { color: #27ae60; font-weight: bold; }
+        .error { color: #e74c3c; font-size: 13px; margin-top: 5px; border-bottom: 1px solid #eee; padding-bottom: 5px;}
+        .btn { background: #27ae60; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px; width: 100%; display: none; font-size: 16px;}
+        .btn:hover { background: #219150; }
+        .loader { display: none; margin: 20px auto; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>SA-SAMS Pre-Flight</h1>
+        <p>Upload your CSV to instantly check for missing IDs, anomalies, and errors before submitting to DDD.</p>
+    </div>
+
+    <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
+        <p>Drag & Drop your CSV here</p>
+        <span>or click to browse</span>
+        <input type="file" id="fileInput" accept=".csv">
+    </div>
+
+    <div class="loader" id="loader"></div>
+    <div class="result-box" id="resultBox"></div>
+    <button class="btn" id="commitBtn">Commit Valid Data to Database</button>
+</div>
+
+<script>
+    const API_URL = "https://the-data-wrangler.onrender.com/api/v1"; 
+    const SCHOOL_ID = "GALESHEWE-HIGH-01"; 
+
+    // Ask for token securely on page load
+    let TOKEN = sessionStorage.getItem('wrangler_token');
+    if (!TOKEN) {
+        TOKEN = prompt("Please enter your Token to access the Pre-Flight engine:");
+        if (TOKEN) {
+            sessionStorage.setItem('wrangler_token', TOKEN);
+        } else {
+            document.body.innerHTML = "<h1 style='color:red; text-align:center;'>Access Denied. Token required.</h1>";
+            throw new Error("No token provided");
+        }
+    }
+
+    const fileInput = document.getElementById('fileInput');
+    const loader = document.getElementById('loader');
+    const resultBox = document.getElementById('resultBox');
+    const commitBtn = document.getElementById('commitBtn');
+    let uploadedFile = null;
+
+    fileInput.addEventListener('change', async (e) => {
+        uploadedFile = e.target.files[0];
+        if (!uploadedFile) return;
+
+        // Reset UI
+        resultBox.style.display = 'none';
+        resultBox.innerHTML = '';
+        commitBtn.style.display = 'none';
+        loader.style.display = 'block';
+
+        const formData = new FormData();
+        formData.append('file', uploadedFile);
+
+        try {
+            // Hit the /validate endpoint
+            const response = await fetch(`${API_URL}/validate`, {
+                method: 'POST',
+                headers: { 
+                    'X-Wrangler-Token': TOKEN, 
+                    'X-School-ID': SCHOOL_ID 
+                },
+                body: formData
+            });
+            
+            if (response.status === 403) {
+                alert("Invalid Token. Please refresh and try again.");
+                sessionStorage.removeItem('wrangler_token');
+                location.reload();
+                return;
+            }
+
+            const data = await response.json();
+            
+            loader.style.display = 'none';
+            resultBox.style.display = 'block';
+
+            if (data.valid_count > 0) {
+                resultBox.innerHTML += `<p class="success">✅ Found ${data.valid_count} valid records ready for ingestion.</p>`;
+                commitBtn.style.display = 'block';
+            }
+            
+            if (data.errors && data.errors.length > 0) {
+                resultBox.innerHTML += `<p style="color:#e74c3c; font-weight:bold; margin-top:15px;">❌ Found ${data.errors.length} errors (These will be skipped):</p>`;
+                data.errors.forEach(err => {
+                    resultBox.innerHTML += `<div class="error">• ${err.error}</div>`;
+                });
+            }
+
+        } catch (error) {
+            loader.style.display = 'none';
+            alert("Failed to connect to the API. Please try again.");
+        }
+    });
+
+    commitBtn.addEventListener('click', async () => {
+        if (!uploadedFile) return;
+        
+        commitBtn.style.display = 'none';
+        loader.style.display = 'block';
+        resultBox.innerHTML = '';
+
+        const formData = new FormData();
+        formData.append('file', uploadedFile);
+
+        try {
+            // Hit the /ingest endpoint
+            const response = await fetch(`${API_URL}/ingest`, {
+                method: 'POST',
+                headers: { 
+                    'X-Wrangler-Token': TOKEN, 
+                    'X-School-ID': SCHOOL_ID 
+                },
+                body: formData
+            });
+            const data = await response.json();
+            
+            loader.style.display = 'none';
+            resultBox.style.display = 'block';
+            
+            if (response.ok) {
+                resultBox.innerHTML = `<p class="success"> Successfully ingested ${data.valid_count} records to the cloud database.</p>`;
+            } else {
+                resultBox.innerHTML = `<p class="error">Failed to ingest: ${data.detail}</p>`;
+            }
+            
+        } catch (error) {
+            loader.style.display = 'none';
+            alert("Failed to commit data.");
+        }
+    });
+</script>
+
+</body>
+</html>
