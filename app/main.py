@@ -5,23 +5,56 @@ import io
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.request
 import urllib.error
+from datetime import datetime
 
 # 1. Target Endpoint Config
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 MASTER_TOKEN = os.getenv("WRANGLER_TOKEN")
 
-# Fail fast if environment variables are missing
 if not SUPABASE_URL or not SUPABASE_KEY or not MASTER_TOKEN:
-    raise ValueError("CRITICAL ERROR: Missing required environment variables (SUPABASE_URL, SUPABASE_KEY, WRANGLER_TOKEN).")
+    raise RuntimeError("CRITICAL: Missing environment variables. Server refusing to start.")
 
-# Security: Limit max upload size to 5MB to prevent DoS
 MAX_UPLOAD_SIZE = 5 * 1024 * 1024 
 
 def sanitize_string(v: str) -> str:
-    clean = re.sub(r"<[^>]*>", "", str(v))  # Mitigate XSS
-    clean = re.sub(r"[;'\"]", "", clean)    # Mitigate basic SQLi
+    clean = re.sub(r"<[^>]*>", "", str(v))
+    clean = re.sub(r"[;'\"]", "", clean)
     return clean.strip()
+
+def validate_sa_id(id_str: str):
+    """Validates SA ID format, birth date, and Luhn checksum."""
+    if not re.match(r"^\d{13}$", id_str):
+        return False, "Must be exactly 13 digits."
+    
+    # 1. Validate Date (YYMMDD)
+    yy, mm, dd = id_str[0:2], id_str[2:4], id_str[4:6]
+    current_year = datetime.now().year % 100
+    yy_int = int(yy)
+    year = 1900 + yy_int if yy_int > current_year else 2000 + yy_int
+    
+    try:
+        datetime(int(year), int(mm), int(dd))
+    except ValueError:
+        return False, "Invalid birth date."
+        
+    # 2. Luhn Algorithm (Checksum)
+    odd_digits = id_str[0:12:2]
+    even_digits = id_str[1:12:2]
+    
+    odd_sum = sum(int(d) for d in odd_digits)
+    even_sum = 0
+    for d in even_digits:
+        double = int(d) * 2
+        even_sum += double if double < 10 else double - 9
+        
+    total = odd_sum + even_sum
+    check_digit = (10 - (total % 10)) % 10
+    
+    if check_digit != int(id_str[12]):
+        return False, "Invalid ID checksum (Luhn)."
+        
+    return True, "Valid"
 
 def validate_row(line: str, index: int):
     fields = [f.strip() for f in line.split(",")]
@@ -30,8 +63,9 @@ def validate_row(line: str, index: int):
     
     id_num, first, last, grade, sba, att = fields
     
-    if not re.match(r"^\d{13}$", id_num):
-        return None, f"Line {index}: ID must be exactly 13 digits."
+    is_valid_id, id_error = validate_sa_id(id_num)
+    if not is_valid_id:
+        return None, f"Line {index}: {id_error}"
         
     try:
         grade_int = int(grade)
@@ -58,20 +92,16 @@ def validate_row(line: str, index: int):
     }, None
 
 def parse_multipart(body: bytes, boundary: str):
-    """A pure-python replacement for the deprecated cgi.FieldStorage"""
     parts = body.split(f"--{boundary}".encode('utf-8'))
     for part in parts:
-        # Look for the file upload part containing CSV text
         if b"filename=" in part and b"\r\n\r\n" in part:
             header_data, file_data = part.split(b"\r\n\r\n", 1)
-            # Remove trailing \r\n from the file payload
             file_data = file_data.rstrip(b"\r\n")
             return file_data.decode('utf-8', errors='ignore')
     return ""
 
 class DataWranglerServer(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
-        # Allows the frontend to talk to the backend API (CORS)
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
@@ -79,7 +109,6 @@ class DataWranglerServer(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
-        # 1. Determine Route
         is_dry_run = False
         if self.path == "/api/v1/validate":
             is_dry_run = True
@@ -90,7 +119,6 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             self.end_headers()
             return
 
-        # 2. Security Check
         token = self.headers.get("X-Wrangler-Token")
         if token != MASTER_TOKEN:
             self.send_response(403)
@@ -98,7 +126,6 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             self.wfile.write(b'{"detail": "Access Token Denied"}')
             return
             
-        # 3. Multi-Tenancy Check (Get School ID from Header)
         school_id = self.headers.get("X-School-ID", "DEMO-SCHOOL-01")
 
         content_length = int(self.headers.get('Content-Length', 0))
@@ -125,7 +152,7 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"detail": f"Parse error: {str(e)}"}).encode('utf-8'))
             return
 
-        # 4. Validation
+        # POPIA Compliant: No raw data is printed to logs
         clean_lines = [line.strip() for line in raw_lines if line.strip() and not line.startswith("------")]
         valid_records = []
         errors = []
@@ -138,7 +165,6 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             else:
                 errors.append({"error": error})
 
-        # 5. Database Write
         if not is_dry_run and valid_records and SUPABASE_KEY:
             target_url = f"{SUPABASE_URL}/rest/v1/sasams_students"
             req = urllib.request.Request(
@@ -167,7 +193,6 @@ class DataWranglerServer(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"detail": str(e)}).encode('utf-8'))
                 return
 
-        # 6. Return Response
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.send_header("Access-Control-Allow-Origin", "*")
@@ -178,8 +203,7 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             "school_id": school_id,
             "valid_count": len(valid_records),
             "errors": errors
-        }).encode('utf-8')) 
-
+        }).encode('utf-8'))
 
 def run():
     port = int(os.environ.get("PORT", 8000))
