@@ -8,7 +8,7 @@ import urllib.request
 import urllib.error
 from datetime import datetime
 
-# 1. Target Endpoint Config (Clean strings to fix Pylance and DNS errors)
+# 1. Target Endpoint Config (Added .strip() to fix DNS errors, "" to fix Pylance)
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "").strip()
 
@@ -35,61 +35,46 @@ def sanitize_string(v: str) -> str:
     return clean.strip()
 
 def validate_sa_id(id_str: str):
-    """Validates SA ID format, birth date, and Luhn checksum."""
     if not re.match(r"^\d{13}$", id_str):
         return False, "Must be exactly 13 digits."
-    
     yy, mm, dd = id_str[0:2], id_str[2:4], id_str[4:6]
     current_year = datetime.now().year % 100
     yy_int = int(yy)
     year = 1900 + yy_int if yy_int > current_year else 2000 + yy_int
-    
     try:
         datetime(int(year), int(mm), int(dd))
     except ValueError:
         return False, "Invalid birth date."
-        
     odd_digits = id_str[0:12:2]
     even_digits = id_str[1:12:2]
-    
     odd_sum = sum(int(d) for d in odd_digits)
     even_sum = 0
     for d in even_digits:
         double = int(d) * 2
         even_sum += double if double < 10 else double - 9
-        
     total = odd_sum + even_sum
     check_digit = (10 - (total % 10)) % 10
-    
     if check_digit != int(id_str[12]):
         return False, "Invalid ID checksum (Luhn)."
-        
     return True, "Valid"
 
 def validate_row(line: str, index: int):
     fields = [f.strip() for f in line.split(",")]
-    
     if len(fields) != 7:
         return None, f"Line {index}: Expected 7 columns, got {len(fields)}"
-    
     id_num, first, last, grade, subject, sba, att = fields
-    
     is_valid_id, id_error = validate_sa_id(id_num)
     if not is_valid_id:
         return None, f"Line {index}: {id_error}"
-        
     if subject not in VALID_SUBJECTS:
         return None, f"Line {index}: Invalid subject '{subject}'."
-
     try:
         grade_int = int(grade)
         if not (1 <= grade_int <= 12):
             return None, f"Line {index}: Grade must be 1-12."
-            
         sba_float = float(sba) if sba else None
         if sba_float is not None and not (0.0 <= sba_float <= 100.0):
             return None, f"Line {index}: SBA mark 0-100."
-            
         att_float = float(att)
         if not (0.0 <= att_float <= 1.0):
             return None, f"Line {index}: Attendance 0.0-1.0."
@@ -97,17 +82,12 @@ def validate_row(line: str, index: int):
         return None, f"Line {index}: Numeric parsing failed."
 
     return {
-        "id_number": id_num,
-        "first_name": sanitize_string(first),
-        "last_name": sanitize_string(last),
-        "grade": grade_int,
-        "subject": subject,
-        "sba_mark": sba_float,
-        "attendance_rate": att_float
+        "id_number": id_num, "first_name": sanitize_string(first),
+        "last_name": sanitize_string(last), "grade": grade_int,
+        "subject": subject, "sba_mark": sba_float, "attendance_rate": att_float
     }, None
 
 def parse_multipart(body: bytes, boundary: str):
-    """Pure-python replacement for deprecated cgi.FieldStorage"""
     parts = body.split(f"--{boundary}".encode('utf-8'))
     for part in parts:
         if b"filename=" in part and b"\r\n\r\n" in part:
@@ -125,7 +105,7 @@ class DataWranglerServer(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
-        # --- REGISTRATION ENDPOINT ---
+        # 1. Registration Route
         if self.path == "/api/v1/register":
             content_length = int(self.headers.get('Content-Length', 0))
             body = self.rfile.read(content_length).decode('utf-8')
@@ -135,23 +115,15 @@ class DataWranglerServer(BaseHTTPRequestHandler):
                 if not school_name:
                     raise ValueError("School name is required.")
                 
-                # Generate a secure random token
                 new_token = f"school-{secrets.token_hex(8)}"
+                target_url = f"{SUPABASE_URL}/rest/v1/sasams_schools"
                 
-                # Clean the URL to prevent DNS errors
-                base_url = str(SUPABASE_URL).strip().rstrip("/")
-                target_url = f"{base_url}/rest/v1/sasams_schools"
-                
-                # This will print to Render Logs so we can see what's happening
-                print(f"DEBUG: Attempting to register school at URL: {target_url}")
-                
-                # Save to Supabase
                 req = urllib.request.Request(
                     target_url,
                     data=json.dumps({"school_name": school_name, "api_token": new_token}).encode('utf-8'),
                     headers={
-                        "apikey": str(SUPABASE_KEY).strip(), 
-                        "Authorization": f"Bearer {str(SUPABASE_KEY).strip()}",
+                        "apikey": SUPABASE_KEY, 
+                        "Authorization": f"Bearer {SUPABASE_KEY}",
                         "Content-Type": "application/json", 
                         "Prefer": "return=representation"
                     },
@@ -167,14 +139,13 @@ class DataWranglerServer(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"token": new_token, "school_name": school_name}).encode('utf-8'))
                 return
             except Exception as e:
-                print(f"DEBUG ERROR: {str(e)}") # Print error to logs
                 self.send_response(400)
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(json.dumps({"detail": f"Registration failed: {str(e)}"}).encode('utf-8'))
                 return
 
-        # --- INGESTION & VALIDATION ENDPOINTS ---
+        # 2. Ingestion & Validation Routes
         is_dry_run = False
         if self.path == "/api/v1/validate":
             is_dry_run = True
