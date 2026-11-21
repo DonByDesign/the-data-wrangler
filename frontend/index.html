@@ -47,11 +47,8 @@
   button { font-family: inherit; }
   [hidden] { display: none !important; }
 
-  /* Ambient background */
   .aurora { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
-  .aurora::before, .aurora::after, .aurora i {
-    content: ""; position: absolute; border-radius: 50%; filter: blur(90px); opacity: .5;
-  }
+  .aurora::before, .aurora::after, .aurora i { content: ""; position: absolute; border-radius: 50%; filter: blur(90px); opacity: .5; }
   .aurora::before { width: 520px; height: 520px; background: var(--primary); top: -160px; left: -120px; animation: float 18s ease-in-out infinite; }
   .aurora::after { width: 480px; height: 480px; background: var(--primary-2); top: 20%; right: -160px; animation: float 22s ease-in-out infinite reverse; }
   .aurora i { width: 380px; height: 380px; background: var(--accent); bottom: -160px; left: 30%; opacity: .25; animation: float 26s ease-in-out infinite; }
@@ -65,7 +62,6 @@
   @keyframes float { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(40px,30px) scale(1.12); } }
   @media (prefers-color-scheme: light) { .aurora::before, .aurora::after, .aurora i { opacity: .22; } }
 
-  /* Nav */
   nav {
     position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center;
     padding: 14px clamp(16px, 4vw, 40px); backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%);
@@ -76,7 +72,6 @@
   .logo-mark svg { width: 18px; height: 18px; stroke: #fff; }
   .nav-actions { display: flex; align-items: center; gap: 10px; }
 
-  /* Buttons */
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; border: 1px solid transparent;
     font-weight: 600; font-size: 14px; padding: 11px 20px; border-radius: 12px; transition: transform .15s, box-shadow .2s, background .2s, border-color .2s; color: var(--text);
@@ -95,7 +90,6 @@
   .icon-btn:hover { color: var(--text); background: var(--surface-2); }
   svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  /* Hero */
   .container { max-width: 1120px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); }
   .hero { text-align: center; padding: clamp(56px, 10vw, 110px) 0 40px; }
   .badge {
@@ -109,21 +103,6 @@
   .hero p.lead { font-size: clamp(16px, 2vw, 19px); color: var(--muted); max-width: 620px; margin: 0 auto 36px; }
   .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
-  /* Preview card */
-  .preview {
-    margin: 56px auto 0; max-width: 760px; border-radius: 22px; padding: 18px; text-align: left;
-    background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); backdrop-filter: blur(16px);
-  }
-  .preview-bar { display: flex; gap: 6px; margin-bottom: 14px; }
-  .preview-bar span { width: 10px; height: 10px; border-radius: 50%; background: var(--border-strong); }
-  .preview-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); margin-bottom: 8px; font-size: 14px; }
-  .preview-row:last-child { margin-bottom: 0; }
-  .tag { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
-  .tag.ok { color: var(--ok); background: var(--ok-bg); }
-  .tag.bad { color: var(--err); background: var(--err-bg); }
-  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; color: var(--muted); }
-
-  /* Features */
   .section-title { text-align: center; margin: 90px 0 36px; }
   .section-title h2 { font-size: clamp(26px, 4vw, 38px); letter-spacing: -.03em; margin: 0 0 10px; }
   .section-title p { color: var(--muted); margin: 0; }
@@ -146,7 +125,6 @@
 
   footer { text-align: center; color: var(--muted); font-size: 13px; padding: 70px 0 40px; }
 
-  /* Workspace */
   #appWorkspace { padding: clamp(28px, 6vw, 64px) 0 60px; }
   .ws-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 auto 28px; max-width: 760px; }
   .ws-head h2 { margin: 0; font-size: clamp(24px, 4vw, 32px); letter-spacing: -.03em; }
@@ -220,7 +198,6 @@
   .success-state h3 { font-size: 24px; margin: 0 0 6px; letter-spacing: -.02em; }
   .success-state p { margin: 0 0 6px; color: var(--muted); }
 
-  /* Modal */
   .modal-overlay { position: fixed; inset: 0; z-index: 100; display: none; justify-content: center; align-items: center; padding: 20px; background: rgba(3,5,12,.65); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
   .modal-overlay.open { display: flex; animation: fade .2s; }
   .modal { width: 100%; max-width: 420px; padding: 32px; border-radius: 24px; background: var(--bg-2); border: 1px solid var(--border-strong); box-shadow: 0 40px 80px -20px rgba(0,0,0,.7); animation: rise .3s cubic-bezier(.2,.9,.3,1.1); text-align: center; }
@@ -239,7 +216,6 @@
   .modal .cancel { margin-top: 14px; font-size: 13px; color: var(--muted); cursor: pointer; background: none; border: 0; }
   .modal .cancel:hover { color: var(--text); }
 
-  /* Toasts */
   #toasts { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 200; display: grid; gap: 10px; width: min(92vw, 420px); }
   .toast { padding: 13px 16px; border-radius: 14px; font-size: 14px; font-weight: 500; display: flex; gap: 10px; align-items: flex-start; background: var(--bg-2); border: 1px solid var(--border-strong); box-shadow: var(--shadow); animation: rise .3s; }
   .toast.error { border-color: color-mix(in srgb, var(--err) 50%, transparent); }
@@ -248,6 +224,7 @@
 
   .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s, transform .7s; }
   .reveal.show { opacity: 1; transform: none; }
+
   /* ===== Apple-style theme overrides ===== */
   :root {
     --bg: #f5f5f7; --bg-2: #ffffff;
@@ -352,25 +329,23 @@
 <div class="aurora"><i></i></div>
 <div class="grid-bg"></div>
 
-<!-- Navigation -->
 <nav>
   <div class="logo">
     <div class="logo-mark"><svg class="i" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></div>
     The Data Wrangler
   </div>
   <div class="nav-actions">
-    <span class="chip" id="navSchool" hidden><span class="dot"></span><span id="navSchoolText"></span></span>
+    <span class="chip" id="navSchool" hidden><span class="dot"></span><span id="navSchoolText">Authorized Session</span></span>
     <button class="btn btn-ghost" id="navBtn">Access Portal</button>
   </div>
 </nav>
 
-<!-- Landing Page -->
 <main id="landingPage">
   <div class="container">
     <section class="hero">
       <span class="badge"><span class="dot"></span> Built for SA-SAMS schools</span>
       <h1>Validate SA-SAMS in <span class="grad-text">seconds</span>, not days.</h1>
-      <p class="lead">Upload your export to instantly catch missing IDs, anomalies, errors and get proactive oversight on weekly learner intervention .</p>
+      <p class="lead">Upload your export to instantly catch missing IDs, anomalies, errors and get proactive oversight on weekly learner intervention.</p>
       <div class="hero-cta">
         <button class="btn btn-primary btn-lg" data-open-login>Start Pre-Flight Validation
           <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
@@ -450,7 +425,6 @@
   </div>
 </main>
 
-<!-- App Workspace -->
 <main id="appWorkspace" hidden>
   <div class="container">
     <div class="ws-head">
@@ -458,7 +432,7 @@
         <h2>Pre-Flight Engine</h2>
         <p style="margin:4px 0 0;color:var(--muted);font-size:14px;">Upload your SA-SAMS CSV export to check it before submission.</p>
       </div>
-      <span class="chip"><span class="dot"></span><span id="schoolLabel"></span></span>
+      <span class="chip"><span class="dot"></span><span id="schoolLabel">Active Session</span></span>
     </div>
 
     <div class="panel">
@@ -470,7 +444,6 @@
         <div class="st" id="st3"><b>3</b><span>Submit</span></div>
       </div>
 
-      <!-- Upload -->
       <div id="uploadView">
         <div class="drop-zone" id="dropZone">
           <div class="drop-icon"><svg class="i" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg></div>
@@ -480,24 +453,20 @@
         </div>
       </div>
 
-      <!-- File chip -->
       <div class="file-chip" id="fileChip" hidden>
         <div class="fi"><svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></svg></div>
         <div class="meta"><div class="name" id="fileName"></div><div class="size" id="fileSize"></div></div>
         <button class="icon-btn" id="clearFile" title="Remove file" aria-label="Remove file"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
 
-      <!-- Loader -->
       <div class="loader-wrap" id="loaderWrap" hidden>
         <div class="loader"></div>
         <p id="loaderText">Validating your records…</p>
         <div style="margin-top:20px"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
       </div>
 
-      <!-- Results -->
       <div id="resultBox" hidden></div>
 
-      <!-- Final -->
       <div class="success-state" id="successView" hidden>
         <div class="check"><svg class="i" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></div>
         <h3>Ingestion complete</h3>
@@ -510,12 +479,17 @@
   </div>
 </main>
 
-<!-- Login Modal -->
 <div class="modal-overlay" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
   <div class="modal">
     <div class="lock"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div>
     <h2 id="loginTitle">School Login</h2>
     <p class="sub">Enter your school token to access the workspace.</p>
+    
+    <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 20px; font-size: 11px; color: var(--muted); text-align: left; line-height: 1.4;">
+        <strong style="color: var(--text);">🔒 POPIA Compliant</strong><br>
+        Your learner data is processed securely in memory and stored in your private Supabase instance. Raw data is never logged or shared with public LLMs.
+    </div>
+
     <div class="field" id="tokenField">
       <input type="password" id="tokenInput" placeholder="Enter school token" autocomplete="off" spellcheck="false">
       <button class="icon-btn" id="toggleToken" type="button" aria-label="Show token"><svg class="i" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
@@ -529,7 +503,6 @@
 
 <script>
   const API_URL = "https://the-data-wrangler.onrender.com/api/v1";
-  const SCHOOL_ID = "GALESHEWE-HIGH-01";
   let TOKEN = "";
   let uploadedFile = null;
   let lastErrors = [];
@@ -541,8 +514,7 @@
   const navBtn = $('navBtn');
 
   $('yr').textContent = new Date().getFullYear();
-  $('schoolLabel').textContent = SCHOOL_ID;
-  $('navSchoolText').textContent = SCHOOL_ID;
+  $('navSchoolText').textContent = "Secure Session";
 
   /* ---------- Helpers ---------- */
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -611,7 +583,7 @@
     closeLogin();
     landingPage.hidden = true;
     appWorkspace.hidden = false;
-    $('navSchool').hidden = true;
+    $('navSchool').hidden = false;
     navBtn.textContent = 'Log out';
     resetWorkspace();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -622,6 +594,7 @@
     resetWorkspace();
     appWorkspace.hidden = true;
     landingPage.hidden = false;
+    $('navSchool').hidden = true;
     navBtn.textContent = 'Access Portal';
     window.scrollTo({ top: 0 });
   }
@@ -660,7 +633,7 @@
     try {
       const response = await fetch(`${API_URL}/validate`, {
         method: 'POST',
-        headers: { 'X-Wrangler-Token': TOKEN, 'X-School-ID': SCHOOL_ID },
+        headers: { 'X-Wrangler-Token': TOKEN },
         body: formData
       });
 
@@ -747,7 +720,7 @@
     try {
       const response = await fetch(`${API_URL}/ingest`, {
         method: 'POST',
-        headers: { 'X-Wrangler-Token': TOKEN, 'X-School-ID': SCHOOL_ID },
+        headers: { 'X-Wrangler-Token': TOKEN },
         body: formData
       });
       const data = await response.json();
@@ -812,7 +785,6 @@
 
     place(cur1, 120, 80); place(cur2, 520, 230);
 
-    // Cursor 1 "validates" each row in turn
     (async function loop() {
       while (true) {
         if (landingPage.hidden) { await sleep(1000); continue; }
@@ -833,14 +805,12 @@
       }
     })();
 
-    // Cursor 2 wanders around the canvas
     setInterval(() => {
       if (landingPage.hidden) return;
       const w = stage.clientWidth, h = stage.clientHeight;
       place(cur2, w * (0.12 + Math.random() * 0.72), h * (0.2 + Math.random() * 0.65));
     }, 2600);
 
-    // Parallax tilt
     canvas.addEventListener('pointermove', e => {
       const r = canvas.getBoundingClientRect();
       const px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5;
@@ -852,7 +822,6 @@
       canvas.querySelectorAll('.float').forEach(f => { f.style.translate = ''; });
     });
 
-    // Toolbar toggle
     canvas.querySelectorAll('.tool').forEach(t => t.addEventListener('click', () => {
       canvas.querySelectorAll('.tool').forEach(x => x.classList.remove('active'));
       t.classList.add('active');
