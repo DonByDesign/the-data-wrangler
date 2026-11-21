@@ -7,9 +7,13 @@ import urllib.request
 import urllib.error
 
 # 1. Target Endpoint Config
-SUPABASE_URL = os.getenv("SUPABASE_URL", "https://reqzqlzphirvqoaycbkl.supabase.co")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
-MASTER_TOKEN = os.getenv("WRANGLER_TOKEN", "WranglerSecureToken2026_NC")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+MASTER_TOKEN = os.getenv("WRANGLER_TOKEN")
+
+# Fail fast if environment variables are missing
+if not SUPABASE_URL or not SUPABASE_KEY or not MASTER_TOKEN:
+    raise ValueError("CRITICAL ERROR: Missing required environment variables (SUPABASE_URL, SUPABASE_KEY, WRANGLER_TOKEN).")
 
 # Security: Limit max upload size to 5MB to prevent DoS
 MAX_UPLOAD_SIZE = 5 * 1024 * 1024 
