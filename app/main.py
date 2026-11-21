@@ -8,7 +8,7 @@ import urllib.request
 import urllib.error
 from datetime import datetime
 
-# 1. Target Endpoint Config (Cleaned to fix Pylance and DNS errors)
+# 1. Target Endpoint Config
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "").strip()
 
@@ -17,7 +17,6 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 MAX_UPLOAD_SIZE = 5 * 1024 * 1024 
 
-# Standard SA CAPS Subjects for validation
 VALID_SUBJECTS = [
     "Mathematics", "Mathematical Literacy", "Technical Mathematics",
     "Physical Sciences", "Life Sciences", "Agricultural Sciences",
@@ -36,68 +35,58 @@ def sanitize_string(v: str) -> str:
     return clean.strip()
 
 def validate_sa_id(id_str: str):
-    """Validates SA ID format, birth date, and Luhn checksum."""
     if not re.match(r"^\d{13}$", id_str):
         return False, "Must be exactly 13 digits."
-    
     yy, mm, dd = id_str[0:2], id_str[2:4], id_str[4:6]
     current_year = datetime.now().year % 100
     yy_int = int(yy)
     year = 1900 + yy_int if yy_int > current_year else 2000 + yy_int
-    
     try:
         datetime(int(year), int(mm), int(dd))
     except ValueError:
         return False, "Invalid birth date."
-        
     odd_digits = id_str[0:12:2]
     even_digits = id_str[1:12:2]
-    
     odd_sum = sum(int(d) for d in odd_digits)
     even_sum = 0
     for d in even_digits:
         double = int(d) * 2
         even_sum += double if double < 10 else double - 9
-        
     total = odd_sum + even_sum
     check_digit = (10 - (total % 10)) % 10
-    
     if check_digit != int(id_str[12]):
         return False, "Invalid ID checksum (Luhn)."
-        
     return True, "Valid"
 
 def validate_row(line: str, index: int):
     fields = [f.strip() for f in line.split(",")]
     
-    # Now expects 7 columns (including subject)
     if len(fields) != 7:
-        return None, f"Line {index}: Expected 7 columns, got {len(fields)}"
+        return None, f"Row {index}: Expected 7 columns, got {len(fields)}"
     
     id_num, first, last, grade, subject, sba, att = fields
     
     is_valid_id, id_error = validate_sa_id(id_num)
     if not is_valid_id:
-        return None, f"Line {index}: {id_error}"
+        return None, f"Row {index}: {id_error}"
         
-    # Validate subject
     if subject not in VALID_SUBJECTS:
-        return None, f"Line {index}: Invalid subject '{subject}'."
-        
+        return None, f"Row {index}: Invalid subject '{subject}'."
+
     try:
         grade_int = int(grade)
         if not (1 <= grade_int <= 12):
-            return None, f"Line {index}: Grade must be 1-12."
+            return None, f"Row {index}: Grade must be 1-12."
             
         sba_float = float(sba) if sba else None
         if sba_float is not None and not (0.0 <= sba_float <= 100.0):
-            return None, f"Line {index}: SBA mark 0-100."
+            return None, f"Row {index}: SBA mark 0-100."
             
         att_float = float(att)
         if not (0.0 <= att_float <= 1.0):
-            return None, f"Line {index}: Attendance 0.0-1.0."
+            return None, f"Row {index}: Attendance 0.0-1.0."
     except ValueError:
-        return None, f"Line {index}: Numeric parsing failed."
+        return None, f"Row {index}: Numeric parsing failed."
 
     return {
         "id_number": id_num,
@@ -123,7 +112,8 @@ class DataWranglerServer(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "X-Wrangler-Token, Content-Type")
+        # FIX: Added X-School-ID to allowed headers to match the frontend
+        self.send_header("Access-Control-Allow-Headers", "X-Wrangler-Token, X-School-ID, Content-Type")
         self.end_headers()
 
     def do_POST(self):
@@ -137,7 +127,6 @@ class DataWranglerServer(BaseHTTPRequestHandler):
                 if not school_name:
                     raise ValueError("School name is required.")
                 
-                # Generate a secure random token
                 new_token = f"school-{secrets.token_hex(8)}"
                 target_url = f"{SUPABASE_URL}/rest/v1/sasams_schools"
                 
@@ -218,7 +207,6 @@ class DataWranglerServer(BaseHTTPRequestHandler):
 
         raw_body = self.rfile.read(content_length)
         raw_lines = []
-        
         try:
             content_type = self.headers.get('Content-Type', '')
             if 'multipart/form-data' in content_type:
@@ -234,7 +222,6 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"detail": f"Parse error: {str(e)}"}).encode('utf-8'))
             return
 
-        # POPIA Compliant: No raw data is printed to logs
         clean_lines = [line.strip() for line in raw_lines if line.strip() and not line.startswith("------")]
         valid_records = []
         errors = []
@@ -253,9 +240,9 @@ class DataWranglerServer(BaseHTTPRequestHandler):
                 target_url,
                 data=json.dumps(valid_records).encode('utf-8'),
                 headers={
-                    "apikey": SUPABASE_KEY,
+                    "apikey": SUPABASE_KEY, 
                     "Authorization": f"Bearer {SUPABASE_KEY}",
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json", 
                     "Prefer": "return=representation,resolution=merge-duplicates"
                 },
                 method="POST"
