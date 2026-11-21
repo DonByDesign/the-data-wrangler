@@ -2,20 +2,31 @@ import os
 import re
 import json
 import io
+import secrets
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.request
 import urllib.error
 from datetime import datetime
 
-# 1. Target Endpoint Config
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-MASTER_TOKEN = os.getenv("WRANGLER_TOKEN")
 
-if not SUPABASE_URL or not SUPABASE_KEY or not MASTER_TOKEN:
+if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError("CRITICAL: Missing environment variables. Server refusing to start.")
 
 MAX_UPLOAD_SIZE = 5 * 1024 * 1024 
+
+VALID_SUBJECTS = [
+    "Mathematics", "Mathematical Literacy", "Technical Mathematics",
+    "Physical Sciences", "Life Sciences", "Agricultural Sciences",
+    "Accounting", "Business Studies", "Economics",
+    "Geography", "History", "Tourism",
+    "English Home Language", "English First Additional Language",
+    "Afrikaans Home Language", "Afrikaans First Additional Language",
+    "isiZulu Home Language", "isiZulu First Additional Language",
+    "isiXhosa Home Language", "isiXhosa First Additional Language",
+    "Life Orientation", "Computer Applications Technology", "Information Technology"
+]
 
 def sanitize_string(v: str) -> str:
     clean = re.sub(r"<[^>]*>", "", str(v))
@@ -23,59 +34,46 @@ def sanitize_string(v: str) -> str:
     return clean.strip()
 
 def validate_sa_id(id_str: str):
-    """Validates SA ID format, birth date, and Luhn checksum."""
     if not re.match(r"^\d{13}$", id_str):
         return False, "Must be exactly 13 digits."
-    
-    # 1. Validate Date (YYMMDD)
     yy, mm, dd = id_str[0:2], id_str[2:4], id_str[4:6]
     current_year = datetime.now().year % 100
     yy_int = int(yy)
     year = 1900 + yy_int if yy_int > current_year else 2000 + yy_int
-    
     try:
         datetime(int(year), int(mm), int(dd))
     except ValueError:
         return False, "Invalid birth date."
-        
-    # 2. Luhn Algorithm (Checksum)
     odd_digits = id_str[0:12:2]
     even_digits = id_str[1:12:2]
-    
     odd_sum = sum(int(d) for d in odd_digits)
     even_sum = 0
     for d in even_digits:
         double = int(d) * 2
         even_sum += double if double < 10 else double - 9
-        
     total = odd_sum + even_sum
     check_digit = (10 - (total % 10)) % 10
-    
     if check_digit != int(id_str[12]):
         return False, "Invalid ID checksum (Luhn)."
-        
     return True, "Valid"
 
 def validate_row(line: str, index: int):
     fields = [f.strip() for f in line.split(",")]
-    if len(fields) != 6:
-        return None, f"Line {index}: Expected 6 columns, got {len(fields)}"
-    
-    id_num, first, last, grade, sba, att = fields
-    
+    if len(fields) != 7:
+        return None, f"Line {index}: Expected 7 columns, got {len(fields)}"
+    id_num, first, last, grade, subject, sba, att = fields
     is_valid_id, id_error = validate_sa_id(id_num)
     if not is_valid_id:
         return None, f"Line {index}: {id_error}"
-        
+    if subject not in VALID_SUBJECTS:
+        return None, f"Line {index}: Invalid subject '{subject}'."
     try:
         grade_int = int(grade)
         if not (1 <= grade_int <= 12):
             return None, f"Line {index}: Grade must be 1-12."
-            
         sba_float = float(sba) if sba else None
         if sba_float is not None and not (0.0 <= sba_float <= 100.0):
             return None, f"Line {index}: SBA mark 0-100."
-            
         att_float = float(att)
         if not (0.0 <= att_float <= 1.0):
             return None, f"Line {index}: Attendance 0.0-1.0."
@@ -83,12 +81,9 @@ def validate_row(line: str, index: int):
         return None, f"Line {index}: Numeric parsing failed."
 
     return {
-        "id_number": id_num,
-        "first_name": sanitize_string(first),
-        "last_name": sanitize_string(last),
-        "grade": grade_int,
-        "sba_mark": sba_float,
-        "attendance_rate": att_float
+        "id_number": id_num, "first_name": sanitize_string(first),
+        "last_name": sanitize_string(last), "grade": grade_int,
+        "subject": subject, "sba_mark": sba_float, "attendance_rate": att_float
     }, None
 
 def parse_multipart(body: bytes, boundary: str):
@@ -105,10 +100,51 @@ class DataWranglerServer(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "X-Wrangler-Token, X-School-ID, Content-Type")
+        self.send_header("Access-Control-Allow-Headers", "X-Wrangler-Token, Content-Type")
         self.end_headers()
 
     def do_POST(self):
+        # --- REGISTRATION ENDPOINT ---
+        if self.path == "/api/v1/register":
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length).decode('utf-8')
+            try:
+                data = json.loads(body)
+                school_name = sanitize_string(data.get("school_name", ""))
+                if not school_name:
+                    raise ValueError("School name is required.")
+                
+                # Generate a secure random token
+                new_token = f"school-{secrets.token_hex(8)}"
+                
+                # Save to Supabase
+                target_url = f"{SUPABASE_URL}/rest/v1/sasams_schools"
+                req = urllib.request.Request(
+                    target_url,
+                    data=json.dumps({"school_name": school_name, "api_token": new_token}).encode('utf-8'),
+                    headers={
+                        "apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}",
+                        "Content-Type": "application/json", "Prefer": "return=representation"
+                    },
+                    method="POST"
+                )
+                with urllib.request.urlopen(req) as response:
+                    response.read()
+                
+                self.send_response(201)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(json.dumps({"token": new_token, "school_name": school_name}).encode('utf-8'))
+                return
+            except Exception as e:
+                self.send_response(400)
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(json.dumps({"detail": str(e)}).encode('utf-8'))
+                return
+
+        # --- INGESTION ENDPOINTS ---
         is_dry_run = False
         if self.path == "/api/v1/validate":
             is_dry_run = True
@@ -120,24 +156,44 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             return
 
         token = self.headers.get("X-Wrangler-Token")
-        if token != MASTER_TOKEN:
+        if not token:
             self.send_response(403)
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(b'{"detail": "Access Token Denied"}')
+            self.wfile.write(b'{"detail": "No token provided"}')
             return
-            
-        school_id = self.headers.get("X-School-ID", "DEMO-SCHOOL-01")
+
+        school_id = None
+        try:
+            auth_url = f"{SUPABASE_URL}/rest/v1/sasams_schools?api_token=eq.{token}&select=id"
+            req = urllib.request.Request(auth_url, headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"})
+            with urllib.request.urlopen(req) as response:
+                res_data = json.loads(response.read().decode('utf-8'))
+                if len(res_data) > 0:
+                    school_id = res_data[0]["id"]
+                else:
+                    self.send_response(403)
+                    self.send_header("Access-Control-Allow-Origin", "*")
+                    self.end_headers()
+                    self.wfile.write(b'{"detail": "Invalid School Token"}')
+                    return
+        except Exception as e:
+            self.send_response(500)
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(json.dumps({"detail": f"Auth DB Error: {str(e)}"}).encode('utf-8'))
+            return
 
         content_length = int(self.headers.get('Content-Length', 0))
         if content_length > MAX_UPLOAD_SIZE:
             self.send_response(413)
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(b'{"detail": "File exceeds 5MB limit."}')
             return
 
         raw_body = self.rfile.read(content_length)
         raw_lines = []
-        
         try:
             content_type = self.headers.get('Content-Type', '')
             if 'multipart/form-data' in content_type:
@@ -148,11 +204,11 @@ class DataWranglerServer(BaseHTTPRequestHandler):
                 raw_lines = raw_body.decode('utf-8').splitlines()
         except Exception as e:
             self.send_response(400)
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(json.dumps({"detail": f"Parse error: {str(e)}"}).encode('utf-8'))
             return
 
-        # POPIA Compliant: No raw data is printed to logs
         clean_lines = [line.strip() for line in raw_lines if line.strip() and not line.startswith("------")]
         valid_records = []
         errors = []
@@ -171,10 +227,8 @@ class DataWranglerServer(BaseHTTPRequestHandler):
                 target_url,
                 data=json.dumps(valid_records).encode('utf-8'),
                 headers={
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": f"Bearer {SUPABASE_KEY}",
-                    "Content-Type": "application/json",
-                    "Prefer": "return=representation,resolution=merge-duplicates"
+                    "apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}",
+                    "Content-Type": "application/json", "Prefer": "return=representation,resolution=merge-duplicates"
                 },
                 method="POST"
             )
@@ -184,11 +238,13 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             except urllib.error.HTTPError as e:
                 error_body = e.read().decode('utf-8')
                 self.send_response(500)
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(json.dumps({"detail": f"Supabase Error: {error_body}"}).encode('utf-8'))
                 return
             except Exception as e:
                 self.send_response(500)
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(json.dumps({"detail": str(e)}).encode('utf-8'))
                 return
