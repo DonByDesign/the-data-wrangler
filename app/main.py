@@ -6,6 +6,7 @@ import secrets
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.request
 import urllib.error
+import urllib.parse 
 from datetime import datetime
 
 # 1. Target Endpoint Config
@@ -178,7 +179,8 @@ class DataWranglerServer(BaseHTTPRequestHandler):
 
         school_id = None
         try:
-            auth_url = f"{SUPABASE_URL}/rest/v1/sasams_schools?api_token=eq.{token}&select=id"
+            safe_token = urllib.parse.quote(token)
+            auth_url = f"{SUPABASE_URL}/rest/v1/sasams_schools?api_token=eq.{safe_token}&select=id"
             req = urllib.request.Request(auth_url, headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"})
             with urllib.request.urlopen(req) as response:
                 res_data = json.loads(response.read().decode('utf-8'))
