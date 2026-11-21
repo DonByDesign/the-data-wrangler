@@ -70,21 +70,38 @@ def parse_multipart(body: bytes, boundary: str):
     return ""
 
 class DataWranglerServer(BaseHTTPRequestHandler):
+    def do_OPTIONS(self):
+        # Allows the frontend to talk to the backend API (CORS)
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "X-Wrangler-Token, X-School-ID, Content-Type")
+        self.end_headers()
+
     def do_POST(self):
-        if self.path != "/api/v1/ingest":
+        # 1. Determine Route
+        is_dry_run = False
+        if self.path == "/api/v1/validate":
+            is_dry_run = True
+        elif self.path == "/api/v1/ingest":
+            is_dry_run = False
+        else:
             self.send_response(404)
             self.end_headers()
             return
 
+        # 2. Security Check
         token = self.headers.get("X-Wrangler-Token")
         if token != MASTER_TOKEN:
             self.send_response(403)
             self.end_headers()
             self.wfile.write(b'{"detail": "Access Token Denied"}')
             return
+            
+        # 3. Multi-Tenancy Check (Get School ID from Header)
+        school_id = self.headers.get("X-School-ID", "DEMO-SCHOOL-01")
 
         content_length = int(self.headers.get('Content-Length', 0))
-        
         if content_length > MAX_UPLOAD_SIZE:
             self.send_response(413)
             self.end_headers()
@@ -92,18 +109,15 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             return
 
         raw_body = self.rfile.read(content_length)
-        
         raw_lines = []
+        
         try:
             content_type = self.headers.get('Content-Type', '')
-            
             if 'multipart/form-data' in content_type:
-                # Extract the boundary string (e.g., boundary=----WebKitFormBoundary...)
                 boundary = content_type.split("boundary=")[1].strip()
                 file_content = parse_multipart(raw_body, boundary)
                 raw_lines = file_content.splitlines()
             else:
-                # Fallback for raw text CSV (like our python test script)
                 raw_lines = raw_body.decode('utf-8').splitlines()
         except Exception as e:
             self.send_response(400)
@@ -111,21 +125,21 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"detail": f"Parse error: {str(e)}"}).encode('utf-8'))
             return
 
-        # Filter out empty lines and split safely
+        # 4. Validation
         clean_lines = [line.strip() for line in raw_lines if line.strip() and not line.startswith("------")]
-
         valid_records = []
         errors = []
 
         for idx, line in enumerate(clean_lines):
             record, error = validate_row(line, idx + 1)
             if record:
+                record["school_id"] = school_id
                 valid_records.append(record)
             else:
                 errors.append({"error": error})
 
-        # Transmit to Supabase
-        if valid_records and SUPABASE_KEY:
+        # 5. Database Write
+        if not is_dry_run and valid_records and SUPABASE_KEY:
             target_url = f"{SUPABASE_URL}/rest/v1/sasams_students"
             req = urllib.request.Request(
                 target_url,
@@ -153,14 +167,19 @@ class DataWranglerServer(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"detail": str(e)}).encode('utf-8'))
                 return
 
+        # 6. Return Response
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(json.dumps({
             "status": "completed",
+            "mode": "Dry Run (Validation Only)" if is_dry_run else "Live Ingestion",
+            "school_id": school_id,
             "valid_count": len(valid_records),
             "errors": errors
-        }).encode('utf-8'))
+        }).encode('utf-8')) 
+
 
 def run():
     port = int(os.environ.get("PORT", 8000))
