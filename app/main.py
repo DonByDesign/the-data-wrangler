@@ -3,15 +3,14 @@ import re
 import json
 import io
 import secrets
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 import urllib.request
 import urllib.error
-import urllib.parse 
 from datetime import datetime
 
-# 1. Target Endpoint Config
-SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "").strip()
+# 1. Target Endpoint Config (Aggressive cleaning to fix DNS errors)
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip().strip("'\"").rstrip("/")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "").strip().strip("'\"")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError("CRITICAL: Missing environment variables. Server refusing to start.")
@@ -113,7 +112,6 @@ class DataWranglerServer(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
-        # FIX: Added X-School-ID to allowed headers to match the frontend
         self.send_header("Access-Control-Allow-Headers", "X-Wrangler-Token, X-School-ID, Content-Type")
         self.end_headers()
 
@@ -152,7 +150,10 @@ class DataWranglerServer(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"token": new_token, "school_name": school_name}).encode('utf-8'))
                 return
             except Exception as e:
+                # THIS WILL SHOW IN RENDER LOGS TO DEBUG THE 400 ERROR
+                print(f"DEBUG: Registration failed: {str(e)}") 
                 self.send_response(400)
+                self.send_header("Content-Type", "application/json") # Added so frontend can read the error
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(json.dumps({"detail": f"Registration failed: {str(e)}"}).encode('utf-8'))
@@ -172,6 +173,7 @@ class DataWranglerServer(BaseHTTPRequestHandler):
         token = self.headers.get("X-Wrangler-Token")
         if not token:
             self.send_response(403)
+            self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(b'{"detail": "No token provided"}')
@@ -179,8 +181,7 @@ class DataWranglerServer(BaseHTTPRequestHandler):
 
         school_id = None
         try:
-            safe_token = urllib.parse.quote(token)
-            auth_url = f"{SUPABASE_URL}/rest/v1/sasams_schools?api_token=eq.{safe_token}&select=id"
+            auth_url = f"{SUPABASE_URL}/rest/v1/sasams_schools?api_token=eq.{token}&select=id"
             req = urllib.request.Request(auth_url, headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"})
             with urllib.request.urlopen(req) as response:
                 res_data = json.loads(response.read().decode('utf-8'))
@@ -188,12 +189,15 @@ class DataWranglerServer(BaseHTTPRequestHandler):
                     school_id = res_data[0]["id"]
                 else:
                     self.send_response(403)
+                    self.send_header("Content-Type", "application/json")
                     self.send_header("Access-Control-Allow-Origin", "*")
                     self.end_headers()
                     self.wfile.write(b'{"detail": "Invalid School Token"}')
                     return
         except Exception as e:
+            print(f"DEBUG: Auth DB Error: {str(e)}")
             self.send_response(500)
+            self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(json.dumps({"detail": f"Auth DB Error: {str(e)}"}).encode('utf-8'))
@@ -202,6 +206,7 @@ class DataWranglerServer(BaseHTTPRequestHandler):
         content_length = int(self.headers.get('Content-Length', 0))
         if content_length > MAX_UPLOAD_SIZE:
             self.send_response(413)
+            self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(b'{"detail": "File exceeds 5MB limit."}')
@@ -219,6 +224,7 @@ class DataWranglerServer(BaseHTTPRequestHandler):
                 raw_lines = raw_body.decode('utf-8').splitlines()
         except Exception as e:
             self.send_response(400)
+            self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(json.dumps({"detail": f"Parse error: {str(e)}"}).encode('utf-8'))
@@ -255,12 +261,14 @@ class DataWranglerServer(BaseHTTPRequestHandler):
             except urllib.error.HTTPError as e:
                 error_body = e.read().decode('utf-8')
                 self.send_response(500)
+                self.send_header("Content-Type", "application/json")
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(json.dumps({"detail": f"Supabase Error: {error_body}"}).encode('utf-8'))
                 return
             except Exception as e:
                 self.send_response(500)
+                self.send_header("Content-Type", "application/json")
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(json.dumps({"detail": str(e)}).encode('utf-8'))
@@ -281,9 +289,9 @@ class DataWranglerServer(BaseHTTPRequestHandler):
 def run():
     port = int(os.environ.get("PORT", 8000))
     server_address = ('0.0.0.0', port)
-    httpd = HTTPServer(server_address, DataWranglerServer)
+    httpd = ThreadingHTTPServer(server_address, DataWranglerServer)
     print(f"The Data Wrangler Native Engine running on port {port}...")
     httpd.serve_forever()
 
 if __name__ == '__main__':
-    run()
+    run() 
