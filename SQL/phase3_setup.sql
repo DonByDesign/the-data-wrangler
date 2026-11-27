@@ -34,6 +34,21 @@ begin
       id_number text not null,
       created_at timestamptz not null default now()
     )$f$, idtype);
+
+  -- School Report: per-term validation counts and the saved diagnosis
+  execute format($f$
+    create table if not exists public.sasams_term_reports (
+      id bigint generated always as identity primary key,
+      school_id %s not null references public.sasams_schools(id) on delete cascade,
+      year int not null,
+      term int not null check (term between 1 and 4),
+      validation jsonb,
+      diagnosis jsonb,
+      diagnosis_source text,
+      diagnosis_model text,
+      updated_at timestamptz not null default now(),
+      unique (school_id, year, term)
+    )$f$, idtype);
 end $$;
 
 -- If sasams_interventions already existed from an earlier draft, these add what is missing.
@@ -58,6 +73,7 @@ create index if not exists interventions_school_status on public.sasams_interven
 --    query by the school's id in code.
 alter table public.sasams_student_history enable row level security;
 alter table public.sasams_interventions enable row level security;
+alter table public.sasams_term_reports enable row level security;
 
 -- 3. PHASE 4 HARDENING: run ONLY after Render's SUPABASE_KEY is the service_role key
 --    and the app still works (register, login, upload). Then the old open policies

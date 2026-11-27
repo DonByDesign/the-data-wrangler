@@ -54,6 +54,8 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip().strip("'\"")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-4-hydrogen").strip()
 GEMINI_API_BASE = os.getenv("GEMINI_API_BASE", "https://generativelanguage.googleapis.com/v1beta").rstrip("/")
 GEMINI_TIMEOUT = int(os.getenv("GEMINI_TIMEOUT", "45"))
+GEMINI_RETRIES = int(os.getenv("GEMINI_RETRIES", "2"))                 # extra tries when Google says "busy" (503/429)
+GEMINI_FALLBACK_MODEL = os.getenv("GEMINI_FALLBACK_MODEL", "").strip()   # optional second model if the first stays busy
 GEMINI_THINKING = os.getenv("GEMINI_THINKING_LEVEL", "low").strip()   # low keeps answers fast and cheap
 GEMINI_MAX_TOKENS = int(os.getenv("GEMINI_MAX_TOKENS", "4096"))       # thinking tokens count against this
 GEMINI_PER_SCHOOL_PER_HOUR = int(os.getenv("GEMINI_PER_SCHOOL_PER_HOUR", "20"))
@@ -838,15 +840,17 @@ def _gemini_body(system, user_text, schema, fmt, think, fold):
         body["systemInstruction"] = {"parts": [{"text": system}]}
     return body
 
-def gemini_generate(system, user_text, schema=None):
-    """Calls Gemini and returns the answer text. Raises RuntimeError with a safe message."""
-    if not GEMINI_API_KEY:
-        raise RuntimeError("Gemini is not configured.")
+_GEMINI_RETRY_CODES = (429, 500, 502, 503, 504)   # temporary on Google's side: worth another try
+
+def _gemini_call(model, system, user_text, schema):
+    """One model, all request styles, with short retries for temporary overload."""
     mode = "json" if schema is not None else "text"
     styles = _GEMINI_STYLES[mode]
-    url = f"{GEMINI_API_BASE}/models/{urllib.parse.quote(GEMINI_MODEL, safe='')}:generateContent"
+    url = f"{GEMINI_API_BASE}/models/{urllib.parse.quote(model, safe='')}:generateContent"
     last = "no attempt"
-    for i in range(_gemini_style[mode], len(styles)):
+    i = _gemini_style[mode]
+    retries = 0
+    while i < len(styles):
         body = json.dumps(_gemini_body(system, user_text, schema, *styles[i])).encode("utf-8")
         req = urllib.request.Request(url, data=body, method="POST", headers={
             "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY})
@@ -855,10 +859,15 @@ def gemini_generate(system, user_text, schema=None):
                 data = json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
             # Response bodies are not logged: they can contain provider details.
-            LOGGER.warning("Gemini HTTP %s (request style %s)", exc.code, styles[i])
+            LOGGER.warning("Gemini HTTP %s (model %s, request style %s)", exc.code, model, styles[i])
             last = f"HTTP {exc.code}"
             if exc.code == 400 and i + 1 < len(styles):
-                continue                       # this model rejected that request style: try the next
+                i += 1                          # this model rejected that request style: try the next
+                continue
+            if exc.code in _GEMINI_RETRY_CODES and retries < GEMINI_RETRIES:
+                retries += 1
+                time.sleep(1.5 * retries)       # 1.5s, then 3s
+                continue
             raise RuntimeError(f"AI provider error ({last}).") from exc
         except Exception as exc:
             raise RuntimeError(f"AI provider unreachable ({type(exc).__name__}).") from exc
@@ -871,6 +880,20 @@ def gemini_generate(system, user_text, schema=None):
         _gemini_style[mode] = i
         return text
     raise RuntimeError(f"AI provider rejected every request style ({last}).")
+
+def gemini_generate(system, user_text, schema=None):
+    """Calls Gemini and returns the answer text. Raises RuntimeError with a safe message.
+    Temporary overload (503/429) is retried; then the optional fallback model is tried."""
+    if not GEMINI_API_KEY:
+        raise RuntimeError("Gemini is not configured.")
+    models = [GEMINI_MODEL] + ([GEMINI_FALLBACK_MODEL] if GEMINI_FALLBACK_MODEL and GEMINI_FALLBACK_MODEL != GEMINI_MODEL else [])
+    error = None
+    for model in models:
+        try:
+            return _gemini_call(model, system, user_text, schema)
+        except RuntimeError as exc:
+            error = exc
+    raise error
 
 def parse_json_object(text):
     t = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(), flags=re.I)
