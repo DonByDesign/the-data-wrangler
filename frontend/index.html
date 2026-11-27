@@ -161,6 +161,8 @@
   .drop-icon svg { width: 28px; height: 28px; stroke: #fff; }
   .drop-zone h3 { margin: 0 0 4px; font-size: 18px; } .drop-zone p { margin: 0; color: var(--muted); font-size: 14px; }
   .drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .schema-hint { margin-top: 14px; font-size: 12.5px; color: var(--muted); text-align: center; }
+  .schema-hint code { font-family: ui-monospace, Menlo, monospace; background: var(--surface-2); padding: 2px 6px; border-radius: 6px; border: 1px solid var(--border); }
 
   .file-chip { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border); margin-bottom: 20px; }
   .file-chip .fi { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; background: var(--ok-bg); color: var(--ok); flex: none; }
@@ -409,6 +411,7 @@
           <h3 data-i18n="drop.t">Drag & drop your CSV here</h3><p data-i18n="drop.p">or click to browse · .csv files only</p>
           <input type="file" id="fileInput" accept=".csv,text/csv" aria-label="CSV">
         </div>
+        <p class="schema-hint">Expected columns: <code>id_number, first_name, last_name, grade, subject, sba_mark, attendance_rate</code></p>
       </div>
       <div class="file-chip" id="fileChip" hidden>
         <div class="fi"><svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></svg></div>
@@ -435,41 +438,55 @@
   <div class="modal">
     <div class="lock"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div>
     <h2 id="loginTitle" data-i18n="login.t">School Login</h2>
-    <p class="sub" data-i18n="login.sub">Enter your school ID and API token to open the workspace.</p>
-    <div class="field" id="schoolField"><label class="lb" for="schoolInput" data-i18n="login.school">School ID</label><input class="plain" id="schoolInput" list="schoolList" autocomplete="off" spellcheck="false" autocapitalize="characters"><datalist id="schoolList"></datalist></div>
+    <p class="sub" data-i18n="login.sub">Enter your school token to open the workspace.</p>
     <div class="field" id="tokenField"><label class="lb" for="tokenInput" data-i18n="login.token">API token</label><input type="password" id="tokenInput" autocomplete="off" spellcheck="false">
       <button class="icon-btn" id="toggleToken" type="button" aria-label="Show"><svg class="i" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+    <button class="linkbtn" id="forgotBtn" type="button" data-i18n="login.forgot">Forgot your token?</button>
+    <div class="subpanel" id="forgotPanel" hidden>
+      <div class="field"><label class="lb" for="forgotEmail" data-i18n="login.forgotEmail">Registered email address</label><input class="plain" type="email" id="forgotEmail" autocomplete="email" spellcheck="false" placeholder="name@school.co.za"></div>
+      <button class="btn btn-ghost" id="sendTokenBtn" type="button" data-i18n="login.sendToken">Email me my token</button>
+    </div>
     <label class="check-row"><input type="checkbox" id="rememberChk"><span data-i18n="login.remember">Keep me signed in on this tab</span></label>
     <button class="btn btn-primary" id="loginBtn" data-i18n="login.btn">Login to Workspace</button>
     <button class="cancel" id="cancelLogin" data-i18n="login.cancel">Cancel</button>
 
     <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
       <p style="font-size: 13px; color: var(--muted); margin: 0 0 8px;">Don't have a token?</p>
-      <button class="btn btn-ghost" style="width: 100%;" onclick="openRegister()">Register Your School</button>
+      <button class="btn btn-ghost" style="width: 100%;" type="button" onclick="openRegister()">Register Your School</button>
     </div>
   </div>
 </div>
 
 <!-- Register Modal -->
-<div class="modal-overlay" id="registerModal" role="dialog" aria-modal="true">
+<div class="modal-overlay" id="registerModal" role="dialog" aria-modal="true" aria-labelledby="regTitle" aria-hidden="true">
   <div class="modal">
     <div id="regFormView">
       <div class="lock" style="background: var(--primary);"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
-      <h2>Register School</h2>
+      <h2 id="regTitle">Register School</h2>
       <p class="sub">Create an account to generate your secure access token.</p>
       <div class="field">
-        <input type="text" id="schoolNameInput" placeholder="e.g. Galeshewe High School" autocomplete="off" style="padding: 14px 16px;">
+        <input type="text" id="schoolNameInput" placeholder="e.g. Galeshewe High School" autocomplete="off" maxlength="120" style="padding: 14px 16px;">
       </div>
-      <button class="btn btn-primary" id="registerBtn">Generate Token</button>
-      <button class="cancel" onclick="closeRegister()">Cancel</button>
+      <div class="field" style="margin-bottom: 6px;">
+        <input type="email" id="regEmailInput" placeholder="Email address (optional)" autocomplete="email" spellcheck="false" maxlength="254" style="padding: 14px 16px;">
+      </div>
+      <p class="hint">Add an email and we'll send your token there. You can also use it later if you lose the token.</p>
+      <button class="btn btn-primary" id="registerBtn" type="button">Generate Token</button>
+      <button class="cancel" type="button" onclick="closeRegister()">Cancel</button>
     </div>
-    
+
     <div id="regSuccessView" hidden>
       <div class="lock" style="background: var(--ok);"><svg class="i" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></div>
       <h2>Registration Complete</h2>
-      <p class="sub">Please save your School Token below. You will need it to log in.</p>
-      <div class="token-display" style="background: var(--ok-bg); border: 1px solid var(--ok); color: var(--ok); padding: 14px; border-radius: 12px; font-family: monospace; font-size: 16px; font-weight: bold; margin: 20px 0; word-break: break-all;" id="newTokenDisplay"></div>
-      <button class="btn btn-primary" onclick="closeRegister(); openLogin();">Proceed to Login</button>
+      <p class="reg-school" id="regSchoolName"></p>
+      <p class="sub" style="margin-bottom: 0;">Please save your School Token below. You will need it to log in.</p>
+      <div class="token-display" style="background: var(--ok-bg); border: 1px solid var(--ok); color: var(--ok); padding: 14px; border-radius: 12px; font-family: monospace; font-size: 16px; font-weight: bold; margin: 16px 0; word-break: break-all;" id="newTokenDisplay"></div>
+      <div class="reg-status" id="regEmailStatus" hidden></div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="copyTokenBtn" type="button">Copy token</button>
+        <button class="btn btn-ghost" id="regResendBtn" type="button" hidden>Email it again</button>
+      </div>
+      <button class="btn btn-primary" type="button" onclick="proceedToLogin()">Proceed to Login</button>
     </div>
   </div>
 </div>
@@ -508,7 +525,6 @@
    Config
    ===================================================================== */
 const API_URL = "https://the-data-wrangler.onrender.com/api/v1";
-const DEFAULT_SCHOOL = "GALESHEWE-HIGH-01";
 
 /* =====================================================================
    Translations
@@ -545,12 +561,12 @@ en: {
 "fix.checksum":"The last digit does not match the rest of the ID. Check for a typing mistake.","fix.dup":"Same ID as row {row}. Remove the duplicate or correct the ID.",
 "fix.cols":"This row has {got} columns but the header has {want}. Look for a stray or unquoted comma.","fix.zero":"Excel dropped a leading zero. Try {id}.",
 "succ.t":"Ingestion complete","succ.p":"Records ingested: {n}",
-"login.t":"School Login","login.sub":"Enter your school ID and API token to open the workspace.","login.school":"School ID","login.token":"API token","login.remember":"Keep me signed in on this tab","login.btn":"Login to Workspace","login.cancel":"Cancel",
+"login.t":"School Login","login.sub":"Enter your school token to open the workspace.","login.forgot":"Forgot your token?","login.forgotEmail":"Registered email address","login.sendToken":"Email me my token","login.checking":"Checking…","toast.reconnect":"Signing you back in…","login.school":"School ID","login.token":"School token","login.remember":"Keep me signed in on this tab","login.btn":"Login to Workspace","login.cancel":"Cancel",
 "hist.t":"History","hist.clear":"Clear","hist.empty":"No validations yet for this school.","hist.committed":"Committed","hist.dl":"Download report","hist.sum":"Valid: {valid} · Errors: {err}",
 "sc.t":"Keyboard shortcuts","sc.upload":"Choose a file","sc.reset":"Start over","sc.hist":"Open history","sc.theme":"Toggle theme","sc.help":"Show this help","sc.esc":"Close dialogs","close":"Close",
 "toast.csv":"Please upload a .csv file.","toast.big":"That file is too large (25 MB max).","toast.empty":"That file has no data rows.","toast.token":"Please enter a valid API token.",
 "toast.school":"Please enter a valid School ID (letters, numbers, dots, dashes).","toast.invalid":"Invalid token. Please log in again.",
-"toast.api":"Could not reach the API. It may be waking up from sleep, so give it a moment and try again.","toast.ingested":"Records ingested successfully.","toast.commitfail":"Failed to ingest: {msg}","toast.cleared":"History cleared.",
+"toast.api":"Could not reach the API. It may be waking up from sleep, give it a moment and try again.","toast.ingested":"Records ingested successfully.","toast.commitfail":"Failed to ingest: {msg}","toast.cleared":"History cleared.",
 "pdf.t":"Validation summary","pdf.school":"School","pdf.file":"File","pdf.date":"Date","pdf.gen":"Generated by The Data Wrangler. ID numbers are masked in this report."
 },
 af: {
@@ -584,7 +600,7 @@ af: {
 "fix.checksum":"Die laaste syfer stem nie met die res van die ID ooreen nie. Kyk vir 'n tikfout.","fix.dup":"Dieselfde ID as ry {row}. Verwyder die duplikaat of korrigeer die ID.",
 "fix.cols":"Hierdie ry het {got} kolomme maar die opskrif het {want}. Soek 'n verdwaalde of ongeslote komma.","fix.zero":"Excel het 'n voorloopnul laat val. Probeer {id}.",
 "succ.t":"Opname voltooi","succ.p":"Rekords opgeneem: {n}",
-"login.t":"Skoolaanmelding","login.sub":"Voer jou skool-ID en API-token in om die werkruimte oop te maak.","login.school":"Skool-ID","login.token":"API-token","login.remember":"Hou my aangemeld op hierdie oortjie","login.btn":"Meld aan by werkruimte","login.cancel":"Kanselleer",
+"login.t":"Skoolaanmelding","login.sub":"Voer jou skooltoken in om die werkruimte oop te maak.","login.forgot":"Het jy jou token vergeet?","login.forgotEmail":"Geregistreerde e-posadres","login.sendToken":"E-pos my token","login.checking":"Kontroleer…","toast.reconnect":"Teken jou weer aan…","login.school":"Skool-ID","login.token":"Skooltoken","login.remember":"Hou my aangemeld op hierdie oortjie","login.btn":"Meld aan by werkruimte","login.cancel":"Kanselleer",
 "hist.t":"Geskiedenis","hist.clear":"Maak skoon","hist.empty":"Nog geen valideringe vir hierdie skool nie.","hist.committed":"Gestoor","hist.dl":"Laai verslag af","hist.sum":"Geldig: {valid} · Foute: {err}",
 "sc.t":"Sleutelbordkortpaaie","sc.upload":"Kies 'n lêer","sc.reset":"Begin oor","sc.hist":"Maak geskiedenis oop","sc.theme":"Wissel tema","sc.help":"Wys hierdie hulp","sc.esc":"Maak dialoë toe","close":"Maak toe",
 "toast.csv":"Laai asseblief 'n .csv-lêer op.","toast.big":"Daardie lêer is te groot (maks. 25 MB).","toast.empty":"Daardie lêer het geen datarye nie.","toast.token":"Voer asseblief 'n geldige API-token in.",
@@ -623,7 +639,7 @@ zu: {
 "fix.checksum":"Inombolo yokugcina ayifani nengxenye esele ye-ID. Hlola iphutha lokuthayipha.","fix.dup":"I-ID efanayo nomugqa {row}. Susa okuphindiwe noma ulungise i-ID.",
 "fix.cols":"Lo mugqa unamakholomu angu-{got} kodwa kudingeka angu-{want}. Funa ikhoma elengeziwe.","fix.zero":"I-Excel ilahle i-zero yokuqala. Zama {id}.",
 "succ.t":"Ukugcina kuphelele","succ.p":"Amarekhodi agciniwe: {n}",
-"login.t":"Ukungena kwesikole","login.sub":"Faka i-ID yesikole nethokheni ye-API ukuze uvule indawo yokusebenza.","login.school":"I-ID yesikole","login.token":"Ithokheni ye-API","login.remember":"Ngigcine ngingenile kule thebhu","login.btn":"Ngena endaweni yokusebenza","login.cancel":"Khansela",
+"login.t":"Ukungena kwesikole","login.sub":"Faka ithokheni yesikole sakho ukuze uvule indawo yokusebenza.","login.forgot":"Ukhohlwe ithokheni yakho?","login.forgotEmail":"Ikheli le-imeyili elibhalisiwe","login.sendToken":"Ngithumelele ithokheni nge-imeyili","login.checking":"Iyahlola…","toast.reconnect":"Iyakungenisa futhi…","login.school":"I-ID yesikole","login.token":"Ithokheni yesikole","login.remember":"Ngigcine ngingenile kule thebhu","login.btn":"Ngena endaweni yokusebenza","login.cancel":"Khansela",
 "hist.t":"Umlando","hist.clear":"Sula","hist.empty":"Akukabikho ukuqinisekiswa kwalesi sikole.","hist.committed":"Kugciniwe","hist.dl":"Landa umbiko","hist.sum":"Kulungile: {valid} · Amaphutha: {err}",
 "sc.t":"Izinqamuleli zekhibhodi","sc.upload":"Khetha ifayela","sc.reset":"Qala phansi","sc.hist":"Vula umlando","sc.theme":"Shintsha itimu","sc.help":"Bonisa lolu sizo","sc.esc":"Vala amawindi","close":"Vala",
 "toast.csv":"Sicela ulayishe ifayela le-.csv.","toast.big":"Ifayela lilikhulu kakhulu (25 MB ubukhulu).","toast.empty":"Ifayela alinayo imigqa yedatha.","toast.token":"Sicela ufake ithokheni ye-API evumelekile.",
@@ -662,7 +678,7 @@ tn: {
 "fix.checksum":"Nomoro ya bofelo ga e tshwane le karolo e nngwe ya ID. Tlhatlhoba phoso ya go kwala.","fix.dup":"ID e e tshwanang le mola {row}. Tlosa e e boeletsweng kgotsa o baakanye ID.",
 "fix.cols":"Mola ono o na le dikoloma di le {got} mme tlhogo e na le di le {want}. Batla comma e e oketsegileng.","fix.zero":"Excel e latlhile zero ya ntlha. Leka {id}.",
 "succ.t":"Go boloka go felela","succ.p":"Direkoto tse di bolokilweng: {n}",
-"login.t":"Go tsena ga sekolo","login.sub":"Tsenya ID ya sekolo le token ya API go bula felo fa o dirang teng.","login.school":"ID ya sekolo","login.token":"Token ya API","login.remember":"Nthomamise ke tsene mo tab eno","login.btn":"Tsena mo felong fa o dirang teng","login.cancel":"Khansela",
+"login.t":"Go tsena ga sekolo","login.sub":"Tsenya token ya sekolo sa gago go bula felo fa o dirang teng.","login.forgot":"O lebetse token ya gago?","login.forgotEmail":"Aterese ya imeile e e kwadisitsweng","login.sendToken":"Nthomelele token ka imeile","login.checking":"E a tlhatlhoba…","toast.reconnect":"E go tsenya gape…","login.school":"ID ya sekolo","login.token":"Token ya sekolo","login.remember":"Nthomamise ke tsene mo tab eno","login.btn":"Tsena mo felong fa o dirang teng","login.cancel":"Khansela",
 "hist.t":"Hisitori","hist.clear":"Phimola","hist.empty":"Ga go ise go nne le ditlhomamiso tsa sekolo seno.","hist.committed":"E bolokilwe","hist.dl":"Tsaya pego","hist.sum":"Go siame: {valid} · Diphoso: {err}",
 "sc.t":"Dilotlhaelo tsa keyboard","sc.upload":"Tlhopha faele","sc.reset":"Simolola gape","sc.hist":"Bula hisitori","sc.theme":"Fetola thimi","sc.help":"Bontsha thuso eno","sc.esc":"Tswala difensetere","close":"Tswala",
 "toast.csv":"Tsweetswee tsenya faele ya .csv.","toast.big":"Faele eo e kgolo thata (25 MB e kgolo go gaisa).","toast.empty":"Faele eo ga e na methalo ya data.","toast.token":"Tsweetswee tsenya token ya API e e siameng.",
@@ -684,7 +700,7 @@ const mkStore = n => ({
 const LS = mkStore('localStorage'), SS = mkStore('sessionStorage');
 
 /* =====================================================================
-   PURE HELPERS (unit-tested) — START
+   PURE HELPERS — START
    ===================================================================== */
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -723,7 +739,6 @@ function dateOk(s) {
   return ok(1900 + yy) || ok(2000 + yy);
 }
 
-/* Returns null when valid, otherwise { code, ... } */
 function validateSAID(raw) {
   const s = String(raw ?? '').trim();
   if (!s) return { code: 'missing' };
@@ -801,8 +816,8 @@ function applyI18n() {
    State & DOM
    ===================================================================== */
 const $ = id => document.getElementById(id);
-const state = { school: LS.get('dw_school') || DEFAULT_SCHOOL, token: '', file: null, parsed: null, local: null, server: null, tab: 'summary', onlyIssues: false, issueFilter: 'all', view: 'upload', histId: null };
-const landingPage = $('landingPage'), appWorkspace = $('appWorkspace'), loginModal = $('loginModal'), keysModal = $('keysModal'), drawer = $('drawer'), scrim = $('scrim');
+const state = { school: '', token: '', file: null, parsed: null, local: null, server: null, tab: 'summary', onlyIssues: false, issueFilter: 'all', view: 'upload', histId: null };
+const landingPage = $('landingPage'), appWorkspace = $('appWorkspace'), loginModal = $('loginModal'), registerModal = $('registerModal'), keysModal = $('keysModal'), drawer = $('drawer'), scrim = $('scrim');
 const fileInput = $('fileInput'), dropZone = $('dropZone'), uploadView = $('uploadView'), fileChip = $('fileChip'), loaderWrap = $('loaderWrap'), resultBox = $('resultBox'), successView = $('successView');
 const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fmtSize = b => b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(1) + ' KB' : (b / 1048576).toFixed(2) + ' MB';
@@ -842,6 +857,7 @@ function openOverlay(el, focusEl) {
 }
 function closeOverlay(restore = true) {
   if (!activeOverlay) return;
+  if (activeOverlay === registerModal) resetRegisterForm();
   activeOverlay.classList.remove('open'); activeOverlay.setAttribute('aria-hidden', 'true'); scrim.classList.remove('open');
   activeOverlay = null; if (restore && lastFocus && lastFocus.focus) lastFocus.focus(); lastFocus = null;
 }
@@ -881,38 +897,87 @@ function resetWorkspace() {
 /* =====================================================================
    Auth & Registration
    ===================================================================== */
-function refreshSchoolUI() {
-  $('schoolLabel').textContent = state.school;
-  const recent = (() => { try { return JSON.parse(LS.get('dw_schools') || '[]'); } catch (_) { return []; } })();
-  $('schoolList').innerHTML = recent.map(s => '<option value="' + esc(s) + '"></option>').join('');
-}
+function refreshSchoolUI() { $('schoolLabel').textContent = state.school; }
 function enterWorkspace() {
   landingPage.hidden = true; appWorkspace.hidden = false; $('historyBtn').hidden = false;
   $('navBtn').textContent = t('nav.logout'); refreshSchoolUI(); window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 function logout() {
-  state.token = ''; SS.del('dw_token'); closeOverlay(false); resetWorkspace();
+  state.token = ''; state.school = ''; SS.del('dw_token'); closeOverlay(false); resetWorkspace();
   appWorkspace.hidden = true; landingPage.hidden = false; $('historyBtn').hidden = true; $('navBtn').textContent = t('nav.access'); window.scrollTo({ top: 0 });
 }
-function openLogin() { $('schoolInput').value = state.school; refreshSchoolUI(); openOverlay(loginModal, state.token ? $('tokenInput') : $('tokenInput')); }
+function openLogin() { $('forgotPanel').hidden = true; openOverlay(loginModal, $('tokenInput')); }
 function flagInvalid(fieldId) { const f = $(fieldId); f.classList.remove('invalid'); void f.offsetWidth; f.classList.add('invalid'); }
-function authenticate() {
-  const school = $('schoolInput').value.trim(), token = $('tokenInput').value.trim();
-  if (!/^[A-Za-z0-9._-]{2,64}$/.test(school)) { flagInvalid('schoolField'); toast(t('toast.school'), 'error'); return; }
-  if (!token || /[^\x21-\x7E]/.test(token)) { flagInvalid('tokenField'); toast(t('toast.token'), 'error'); return; }
-  const changed = school !== state.school || !!state.token;
-  state.school = school; state.token = token; LS.set('dw_school', school);
-  try { const r = JSON.parse(LS.get('dw_schools') || '[]').filter(s => s !== school); r.unshift(school); LS.set('dw_schools', JSON.stringify(r.slice(0, 8))); } catch (_) {}
-  if ($('rememberChk').checked) SS.set('dw_token', token); else SS.del('dw_token');
-  $('tokenInput').value = ''; closeOverlay(false);
-  enterWorkspace(); if (changed || !state.file) resetWorkspace();
+
+async function loginRequest(token) {
+  const res = await fetch(API_URL + '/login', { method: 'POST', headers: { 'X-Wrangler-Token': token } });
+  let data = null; try { data = await res.json(); } catch (_) {}
+  return { ok: res.ok, status: res.status, data };
 }
-function openRegister() { closeOverlay(); $('registerModal').classList.add('open'); }
-function closeRegister() { 
-  $('registerModal').classList.remove('open'); 
-  $('regFormView').hidden = false; 
-  $('regSuccessView').hidden = true;
-  $('schoolNameInput').value = '';
+
+let authBusy = false;
+async function authenticate() {
+  if (authBusy) return;
+  const token = $('tokenInput').value.trim();
+  if (!token || /[^\x21-\x7E]/.test(token)) { flagInvalid('tokenField'); toast(t('toast.token'), 'error'); return; }
+  authBusy = true;
+  const btn = $('loginBtn'); btn.disabled = true; btn.textContent = t('login.checking');
+  try {
+    const r = await loginRequest(token);
+    if (r.status === 403) { flagInvalid('tokenField'); toast(t('toast.invalid'), 'error'); return; }
+    if (!r.ok || !r.data || !r.data.school_name) throw new Error('bad response');
+    state.school = r.data.school_name; state.token = token;
+    if ($('rememberChk').checked) SS.set('dw_token', token); else SS.del('dw_token');
+    $('tokenInput').value = ''; closeOverlay(false);
+    enterWorkspace(); resetWorkspace();
+  } catch (_) {
+    toast(t('toast.api'), 'error', 6500);
+  } finally {
+    authBusy = false; btn.disabled = false; btn.textContent = t('login.btn');
+  }
+}
+
+const EMAIL_RE = /^[^@\s]{1,64}@[^@\s]+\.[^@\s]{2,}$/;
+async function sendTokenEmail(email, btn) {
+  const label = btn.textContent; btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const res = await fetch(API_URL + '/send-token', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+    let data = null; try { data = await res.json(); } catch (_) {}
+    if (res.ok) { toast((data && data.detail) || 'Check your inbox.', 'success', 7000); return true; }
+    toast((data && data.detail) || 'Could not send the email.', 'error', 6500);
+  } catch (_) {
+    toast(t('toast.api'), 'error', 6500);
+  } finally {
+    btn.disabled = false; btn.textContent = label;
+  }
+  return false;
+}
+
+/* ---- Registration ---- */
+let lastReg = null;
+function resetRegisterForm() {
+  $('regFormView').hidden = false; $('regSuccessView').hidden = true;
+  $('schoolNameInput').value = ''; $('regEmailInput').value = ''; $('newTokenDisplay').textContent = '';
+  $('regEmailStatus').hidden = true; $('regResendBtn').hidden = true; lastReg = null;
+}
+function openRegister() { openOverlay(registerModal, $('schoolNameInput')); }
+function closeRegister() { closeOverlay(); }
+function proceedToLogin() {
+  const tk = lastReg && lastReg.token;
+  closeOverlay(false);
+  openLogin();
+  if (tk) $('tokenInput').value = tk;
+}
+function showRegSuccess(data, email) {
+  $('regFormView').hidden = true; $('regSuccessView').hidden = false;
+  $('regSchoolName').textContent = data.school_name || '';
+  $('newTokenDisplay').textContent = data.token;
+  const st = $('regEmailStatus'), rs = $('regResendBtn');
+  if (email) {
+    st.hidden = false; st.className = 'reg-status ' + (data.emailed ? 'ok' : 'warn');
+    st.textContent = data.emailed ? 'We emailed your token to ' + email + '.' : 'We could not email your token just now. Copy it from above, or try emailing it again.';
+    rs.hidden = false; rs.textContent = data.emailed ? 'Email it again' : 'Try emailing again';
+  } else { st.hidden = true; rs.hidden = true; }
 }
 
 document.querySelectorAll('[data-open-login]').forEach(b => b.addEventListener('click', openLogin));
@@ -920,42 +985,53 @@ $('navBtn').addEventListener('click', () => { state.token ? logout() : openLogin
 $('schoolChip').addEventListener('click', openLogin);
 $('cancelLogin').addEventListener('click', () => closeOverlay());
 loginModal.addEventListener('click', e => { if (e.target === loginModal) closeOverlay(); });
+registerModal.addEventListener('click', e => { if (e.target === registerModal) closeOverlay(); });
 keysModal.addEventListener('click', e => { if (e.target === keysModal) closeOverlay(); });
 $('closeKeys').addEventListener('click', () => closeOverlay());
 $('keysBtn').addEventListener('click', () => openOverlay(keysModal));
 $('loginBtn').addEventListener('click', authenticate);
-['tokenInput', 'schoolInput'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') authenticate(); }));
-['tokenInput', 'schoolInput'].forEach(id => $(id).addEventListener('input', () => $(id === 'tokenInput' ? 'tokenField' : 'schoolField').classList.remove('invalid')));
+$('tokenInput').addEventListener('keydown', e => { if (e.key === 'Enter') authenticate(); });
+$('tokenInput').addEventListener('input', () => $('tokenField').classList.remove('invalid'));
 $('toggleToken').addEventListener('click', () => { const i = $('tokenInput'); i.type = i.type === 'password' ? 'text' : 'password'; });
+$('forgotBtn').addEventListener('click', () => { const p = $('forgotPanel'); p.hidden = !p.hidden; if (!p.hidden) $('forgotEmail').focus(); });
+$('sendTokenBtn').addEventListener('click', () => {
+  const email = $('forgotEmail').value.trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) { toast('Please enter a valid email address.', 'error'); $('forgotEmail').focus(); return; }
+  sendTokenEmail(email, $('sendTokenBtn'));
+});
+$('forgotEmail').addEventListener('keydown', e => { if (e.key === 'Enter') $('sendTokenBtn').click(); });
 $('themeBtn').addEventListener('click', toggleTheme);
 $('langSel').addEventListener('change', e => {
   LANG = e.target.value; LS.set('dw_lang', LANG); applyI18n(); refreshDemo();
   if (state.parsed && state.view === 'results') renderResults();
   renderHistory();
 });
+['schoolNameInput', 'regEmailInput'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') $('registerBtn').click(); }));
 $('registerBtn').addEventListener('click', async () => {
   const name = $('schoolNameInput').value.trim();
+  const email = $('regEmailInput').value.trim().toLowerCase();
   if (!name) { toast('Please enter your school name.', 'error'); return; }
-  
-  $('registerBtn').textContent = 'Generating...';
+  if (email && !EMAIL_RE.test(email)) { toast('Please enter a valid email address.', 'error'); return; }
+
+  const btn = $('registerBtn'); btn.disabled = true; btn.textContent = 'Generating...';
   try {
     const res = await fetch(`${API_URL}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ school_name: name })
+      body: JSON.stringify(email ? { school_name: name, email } : { school_name: name })
     });
-    const data = await res.json();
-    if (res.ok) {
-      $('regFormView').hidden = true;
-      $('regSuccessView').hidden = false;
-      $('newTokenDisplay').textContent = data.token;
-    } else {
-      toast('Registration failed: ' + (data.detail || 'Unknown error'), 'error');
-    }
+    let data = null; try { data = await res.json(); } catch (_) {}
+    if (res.ok && data && data.token) { lastReg = { token: data.token, email }; showRegSuccess(data, email); }
+    else toast('Registration failed: ' + ((data && data.detail) || 'Unknown error'), 'error');
   } catch (e) {
     toast('Could not connect to the server.', 'error');
   }
-  $('registerBtn').textContent = 'Generate Token';
+  btn.disabled = false; btn.textContent = 'Generate Token';
+});
+$('regResendBtn').addEventListener('click', () => { if (lastReg && lastReg.email) sendTokenEmail(lastReg.email, $('regResendBtn')); });
+$('copyTokenBtn').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText($('newTokenDisplay').textContent); toast('Token copied.', 'success', 2500); }
+  catch (_) { toast('Could not copy. Please select the token and copy it manually.', 'error'); }
 });
 
 /* =====================================================================
@@ -965,7 +1041,7 @@ function xhrPost(path, file, cb = {}) {
   return new Promise((resolve, reject) => {
     const x = new XMLHttpRequest();
     x.open('POST', API_URL + path); x.timeout = 120000;
-    x.setRequestHeader('X-Wrangler-Token', state.token); x.setRequestHeader('X-School-ID', state.school);
+    x.setRequestHeader('X-Wrangler-Token', state.token);
     x.upload.onprogress = e => { if (e.lengthComputable && cb.onUpload) cb.onUpload(Math.round(e.loaded / e.total * 100)); };
     x.upload.onload = () => { if (cb.onUploadDone) cb.onUploadDone(); };
     x.onload = () => { let json = null; try { json = JSON.parse(x.responseText); } catch (_) {} resolve({ status: x.status, ok: x.status >= 200 && x.status < 300, json }); };
@@ -976,7 +1052,7 @@ function xhrPost(path, file, cb = {}) {
 const detailMsg = j => { const d = j && j.detail; return d == null ? 'Unknown error' : typeof d === 'string' ? d : JSON.stringify(d); };
 
 /* =====================================================================
-   Upload → local checks → server validation
+   Upload -> local checks -> server validation
    ===================================================================== */
 ['dragenter', 'dragover'].forEach(ev => dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('drag'); }));
 ['dragleave', 'drop'].forEach(ev => dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.remove('drag'); }));
@@ -1127,11 +1203,38 @@ function wireResults() {
   });
   const only = $('onlyChk'); if (only) only.addEventListener('change', e => {
     state.onlyIssues = e.target.checked;
-    const pane = $('pane-preview');
-    if (pane) pane.innerHTML = '<div class="tools"><label>' + esc(t('prev.map')) + ' <select class="sel" id="idColSel">' + /* re-render needed */ '' + '</select></label></div>' + previewTable();
-    renderResults(); // simple re-render
+    renderResults();
   });
   const issSel = $('issueSel'); if (issSel) issSel.addEventListener('change', e => { state.issueFilter = e.target.value; renderResults(); });
+}
+
+/* =====================================================================
+   Confetti celebration
+   ===================================================================== */
+function confetti() {
+  if (REDUCE) return;
+  const c = $('confetti'), ctx = c.getContext('2d');
+  c.width = window.innerWidth; c.height = window.innerHeight;
+  const cols = ['#0071e3', '#34c759', '#ff9500', '#5e5ce6', '#ff2d55'];
+  const pieces = Array.from({ length: 70 }, () => ({
+    x: Math.random() * c.width, y: -20 - Math.random() * 140,
+    w: 6 + Math.random() * 6, h: 10 + Math.random() * 8,
+    vy: 2 + Math.random() * 3.5, vx: (Math.random() - 0.5) * 3,
+    rot: Math.random() * Math.PI * 2, vr: (Math.random() - 0.5) * 0.15,
+    col: cols[Math.floor(Math.random() * cols.length)]
+  }));
+  let frame = 0;
+  (function step() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    pieces.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.col; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    if (++frame < 130) requestAnimationFrame(step);
+    else ctx.clearRect(0, 0, c.width, c.height);
+  })();
 }
 
 /* =====================================================================
@@ -1225,14 +1328,13 @@ $('clearHist').addEventListener('click', () => { LS.del('dw_hist'); renderHistor
 /* =====================================================================
    Demo canvas
    ===================================================================== */
-const DEMO_MSGS = { 'demo.len': 'ID must be 13 digits', 'demo.missing': 'ID missing' };
 function refreshDemo() {
   const rows = document.querySelectorAll('#canvas .row');
   rows.forEach(r => {
     const tEl = r.querySelector('.tag');
     const ok = r.dataset.result === 'ok';
     tEl.className = 'tag ' + (ok ? 'ok' : 'bad');
-    tEl.textContent = ok ? t('demo.valid') : (r.dataset.msgkey ? DEMO_MSGS[r.dataset.msgkey] : '');
+    tEl.textContent = ok ? t('demo.valid') : (r.dataset.msgkey ? t(r.dataset.msgkey) : '');
   });
 }
 (function initCanvas() {
@@ -1248,7 +1350,7 @@ function refreshDemo() {
     r.dataset.state = state;
     const tEl = r.querySelector('.tag');
     tEl.className = 'tag ' + (state === 'pending' ? 'pend' : state === 'ok' ? 'ok' : 'bad');
-    tEl.textContent = state === 'pending' ? t('demo.checking') : state === 'ok' ? t('demo.valid') : (r.dataset.msgkey ? DEMO_MSGS[r.dataset.msgkey] : '');
+    tEl.textContent = state === 'pending' ? t('demo.checking') : state === 'ok' ? t('demo.valid') : (r.dataset.msgkey ? t(r.dataset.msgkey) : '');
   }
 
   refreshDemo();
@@ -1315,14 +1417,30 @@ document.querySelectorAll('.reveal').forEach((el, i) => { el.style.transitionDel
 /* =====================================================================
    Boot
    ===================================================================== */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeOverlay(); return; }
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (['input', 'select', 'textarea'].includes(tag) || e.target.isContentEditable || activeOverlay) return;
+  const k = e.key.toLowerCase();
+  if (e.key === '?') openOverlay(keysModal);
+  else if (k === 't') toggleTheme();
+  else if (k === 'h' && state.token) { renderHistory(); openOverlay(drawer); }
+  else if (k === 'u' && state.token && state.view === 'upload') fileInput.click();
+  else if (k === 'r' && state.token && state.view !== 'loading') resetWorkspace();
+});
+
 applyI18n();
 updateThemeIcon();
 $('langSel').value = LANG;
 refreshSchoolUI();
 const savedToken = SS.get('dw_token');
 if (savedToken) {
-  state.token = savedToken;
-  enterWorkspace();
+  toast(t('toast.reconnect'), 'info', 8000);
+  loginRequest(savedToken).then(r => {
+    if (r.ok && r.data && r.data.school_name) { state.token = savedToken; state.school = r.data.school_name; enterWorkspace(); }
+    else if (r.status === 403) { SS.del('dw_token'); }
+  }).catch(() => toast(t('toast.api'), 'error', 6500));
 }
 </script>
 </body>
