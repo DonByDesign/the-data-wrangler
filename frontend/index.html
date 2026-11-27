@@ -161,8 +161,6 @@
   .drop-icon svg { width: 28px; height: 28px; stroke: #fff; }
   .drop-zone h3 { margin: 0 0 4px; font-size: 18px; } .drop-zone p { margin: 0; color: var(--muted); font-size: 14px; }
   .drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-  .schema-hint { margin-top: 14px; font-size: 12.5px; color: var(--muted); text-align: center; }
-  .schema-hint code { font-family: ui-monospace, Menlo, monospace; background: var(--surface-2); padding: 2px 6px; border-radius: 6px; border: 1px solid var(--border); }
 
   .file-chip { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border); margin-bottom: 20px; }
   .file-chip .fi { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; background: var(--ok-bg); color: var(--ok); flex: none; }
@@ -310,6 +308,92 @@
     #printReport th { background: #f0f0f0; } #printReport .foot { margin-top: 16px; color: #666; font-size: 11px; }
     body { background: #fff !important; }
   }
+
+  /* ===== Phase 3: workspace tabs, insights, interventions ===== */
+  .ws-tabs { max-width: 860px; margin: 0 auto 18px; }
+  .ws-tabs .tabs { margin-bottom: 0; }
+  .panel.wide { max-width: 1040px; }
+  .ws-wide-head { max-width: 1040px; }
+  .period-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin: 0 0 18px; padding: 12px 14px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border); font-size: 13.5px; }
+  .period-row label { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  .period-row .hint { margin: 0; flex: 1; min-width: 180px; }
+  .pill.warn { background: var(--warn-bg); color: var(--warn); }
+  .p3-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  .p3-head h3 { margin: 0; font-size: 20px; letter-spacing: -.02em; }
+  .p3-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 18px; }
+  .p3-card { border: 1px solid var(--border); border-radius: 16px; background: var(--surface-2); padding: 18px; min-width: 0; }
+  .p3-card h4 { margin: 0 0 4px; font-size: 14.5px; } .p3-card .cap { margin: 0 0 14px; font-size: 12.5px; color: var(--muted); }
+  .p3-card.full { grid-column: 1 / -1; }
+  .hb { display: grid; grid-template-columns: minmax(90px, 36%) 1fr 52px; gap: 10px; align-items: center; font-size: 13px; margin: 7px 0; }
+  .hb .hl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hb .ht { position: relative; height: 12px; border-radius: 99px; background: var(--border); }
+  .hb .ht i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 99px; background: var(--primary); }
+  .hb .ht i.low { background: var(--warn); }
+  .hb .ht u { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--text); opacity: .55; }
+  .hb b { text-align: right; font-variant-numeric: tabular-nums; }
+  .riskbar { display: flex; height: 16px; border-radius: 99px; overflow: hidden; background: var(--border); margin: 6px 0 12px; }
+  .riskbar i { display: block; min-width: 0; }
+  .riskbar .high { background: var(--err); } .riskbar .medium { background: var(--warn); } .riskbar .low { background: var(--ok); }
+  .p3-card svg.line { width: 100%; height: auto; display: block; overflow: visible; }
+  .p3-card svg text { fill: var(--muted); font-size: 12px; font-family: inherit; }
+  .tbl-wrap { overflow-x: auto; }
+  table.p3 { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.p3 th { text-align: left; font-size: 12px; color: var(--muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table.p3 td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.p3 .why { color: var(--muted); font-size: 12.5px; max-width: 360px; }
+  .ai-box { border: 1px solid color-mix(in srgb, var(--primary) 40%, var(--border)); background: color-mix(in srgb, var(--primary) 7%, var(--surface-2)); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; font-size: 14px; }
+  .ai-box .tag2 { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--primary); margin-bottom: 6px; }
+  .ai-box p { margin: 0 0 8px; } .ai-box ul { margin: 0; padding-left: 20px; } .ai-box li { margin: 4px 0; }
+  .rec { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 1px solid var(--border); }
+  .rec:first-of-type { border-top: 0; }
+  .rec b { display: block; font-size: 14px; } .rec span.d { font-size: 13px; color: var(--muted); }
+  .iv { display: flex; gap: 14px; justify-content: space-between; flex-wrap: wrap; padding: 14px 0; border-top: 1px solid var(--border); }
+  .iv:first-child { border-top: 0; }
+  .iv .main { flex: 1; min-width: 220px; } .iv .main b { font-size: 14.5px; }
+  .iv .meta2 { font-size: 12.5px; color: var(--muted); margin: 3px 0; } .iv p { margin: 4px 0 0; font-size: 13.5px; }
+  .iv .side { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
+  .iv input.plain, .field textarea, .field select { width: 100%; padding: 11px 14px; border-radius: 12px; font-size: 14.5px; background: var(--surface-2); border: 1px solid var(--border-strong); color: var(--text); font-family: inherit; }
+  .iv input.plain { margin-top: 8px; }
+  .field textarea { resize: vertical; min-height: 70px; }
+  .modal.left { text-align: left; max-width: 520px; } .modal.left .field { margin-bottom: 12px; }
+  .modal.left .lb { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .modal.wide { max-width: 600px; }
+  .mini-note { font-size: 12.5px; color: var(--muted); margin: 10px 0 0; }
+  .btn-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .btn-row .btn { flex: 1; }
+  .diag-card { margin: 16px 0; }
+  .diag-plain { border: 1px solid var(--border); border-radius: 14px; background: var(--surface); padding: 14px 16px; font-size: 14px; }
+  .diag-plain .tag2 { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .diag-plain p, .ai-box p { margin: 0 0 8px; } .diag-plain ul { margin: 0 0 8px; padding-left: 20px; } .diag-plain li { margin: 4px 0; }
+  /* ===== School report (screen preview + print) ===== */
+  .rep-bar { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 14px; }
+  .rep-anon { font-size: 13.5px; display: flex; gap: 8px; align-items: center; }
+  .rpt { --primary: #0071e3; --ok: #1d8a3e; --warn: #a14d00; --err: #c20013; --border: #d2d2d7; --muted: #555; --text: #111; --surface-2: #fff; --ok-bg: #e4f5e9; --warn-bg: #fff0dc; --err-bg: #fde6e4;
+         color: #111; font-size: 13px; line-height: 1.5; }
+  .rpt .paper { background: #fff; max-width: 794px; margin: 0 auto; padding: 36px 40px; border-radius: 6px; box-shadow: 0 2px 16px rgba(0,0,0,.2); }
+  .rpt h1 { font-size: 26px; margin: 0 0 2px; letter-spacing: -.02em; } .rpt .rsub { margin: 0 0 6px; color: #555; }
+  .rpt h2 { font-size: 15px; margin: 22px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #0071e3; break-after: avoid; }
+  .rpt h3 { font-size: 13px; margin: 14px 0 6px; color: #333; break-after: avoid; }
+  .rpt p { margin: 6px 0; } .rpt ul { margin: 4px 0 8px; padding-left: 20px; } .rpt li { margin: 3px 0; }
+  .rpt table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font-size: 12px; }
+  .rpt th, .rpt td { border: 1px solid #ccc; padding: 5px 8px; text-align: left; vertical-align: top; } .rpt th { background: #f0f0f0; }
+  .rpt .rmuted { color: #666; } .rpt .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 8px 0; }
+  .rpt .kpi { border: 1px solid #d2d2d7; border-radius: 8px; padding: 8px 12px; } .rpt .kpi b { display: block; font-size: 20px; } .rpt .kpi span { color: #555; font-size: 12px; }
+  .rpt .rbox { border: 1px solid #b9d4f3; background: #f2f8ff; border-radius: 8px; padding: 10px 14px; margin: 8px 0; } .rpt .rtag { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #0071e3; margin-bottom: 4px; }
+  .rpt .rrec { display: flex; gap: 10px; align-items: flex-start; margin: 8px 0; } .rpt .rli { margin: 3px 0 3px 8px; }
+  .rpt svg text { fill: #555; font-size: 12px; font-family: inherit; } .rpt .hb { font-size: 12px; } .rpt .hb .ht { background: #e4e4e8; }
+  .rpt .pill.neutral { background: #e4e4e8; color: #444; } .rpt .pill { white-space: nowrap; }
+  .rpt svg.line { max-width: 440px; margin: 0 auto 0 0; }
+  @media (max-width: 640px) { .rpt { overflow-x: auto; } .rpt .paper { padding: 20px 14px; } .rpt .kpis { grid-template-columns: repeat(2, 1fr); } .rep-bar .btn { flex: 1; } }
+  @media print {
+    @page rpt { size: A4; margin: 10mm; }
+    #printReport .rpt { page: rpt; margin: -8mm; }
+    #printReport .rpt .paper { box-shadow: none; padding: 0; max-width: none; border-radius: 0; }
+    #printReport .rpt, #printReport .rpt * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    #printReport .rpt .rbox, #printReport .rpt .kpi, #printReport .rpt .rrec { break-inside: avoid; }
+    #printReport .rpt tr { break-inside: avoid; } #printReport .rpt thead { display: table-header-group; }
+    #printReport .rpt table th, #printReport .rpt table td { padding: 4px 7px; }
+  }
 </style>
 </head>
 <body>
@@ -399,11 +483,21 @@
       <div><h2 data-i18n="ws.title">Pre-Flight Engine</h2><p class="sub" data-i18n="ws.sub">Upload your SA-SAMS CSV export to check it before submission.</p></div>
       <button class="chip chip-btn" id="schoolChip" data-i18n-aria="ws.switch" aria-label="Switch school"><span class="dot"></span><span id="schoolLabel"></span></button>
     </div>
-    <div class="panel">
+    <div class="ws-tabs"><div class="tabs" role="tablist" id="wsTabs">
+      <button class="tab" role="tab" data-ws="upload" aria-selected="true">Upload &amp; validate</button>
+      <button class="tab" role="tab" data-ws="insights" aria-selected="false">Insights</button>
+      <button class="tab" role="tab" data-ws="interventions" aria-selected="false">Interventions</button>
+    </div></div>
+    <div class="panel" id="uploadPanel">
       <div class="stepper">
         <div class="st active" id="st1"><b>1</b><span data-i18n="st1">Upload</span></div><div class="st-line" id="ln1"><i></i></div>
         <div class="st" id="st2"><b>2</b><span data-i18n="st2">Validate</span></div><div class="st-line" id="ln2"><i></i></div>
         <div class="st" id="st3"><b>3</b><span data-i18n="st3">Commit</span></div>
+      </div>
+      <div class="period-row" id="periodRow">
+        <label>Term <select class="sel" id="termSel"><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+        <label>Year <select class="sel" id="yearSel"></select></label>
+        <span class="hint">Each upload is saved as a snapshot for this term, so you can see trends. Uploading the same term again replaces it.</span>
       </div>
       <div id="uploadView">
         <div class="drop-zone" id="dropZone">
@@ -411,7 +505,6 @@
           <h3 data-i18n="drop.t">Drag & drop your CSV here</h3><p data-i18n="drop.p">or click to browse · .csv files only</p>
           <input type="file" id="fileInput" accept=".csv,text/csv" aria-label="CSV">
         </div>
-        <p class="schema-hint">Expected columns: <code>id_number, first_name, last_name, grade, subject, sba_mark, attendance_rate</code></p>
       </div>
       <div class="file-chip" id="fileChip" hidden>
         <div class="fi"><svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></svg></div>
@@ -427,9 +520,12 @@
       <div class="success-state" id="successView" hidden>
         <div class="check"><svg class="i" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></div>
         <h3 data-i18n="succ.t">Ingestion complete</h3><p id="successText"></p>
-        <div class="actions" style="justify-content:center"><button class="btn btn-primary" id="againBtn" data-i18n="btn.another">Choose another file</button></div>
+        <div class="actions" style="justify-content:center"><button class="btn btn-primary" id="againBtn" data-i18n="btn.another">Choose another file</button><button class="btn btn-ghost" id="toInsights">View insights</button></div>
       </div>
     </div>
+    <div class="panel wide" id="insightsPanel" hidden></div>
+    <div class="panel wide" id="ivPanel" hidden></div>
+    <div class="panel wide" id="reportPanel" hidden></div>
   </div>
 </main>
 
@@ -452,17 +548,17 @@
 
     <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
       <p style="font-size: 13px; color: var(--muted); margin: 0 0 8px;">Don't have a token?</p>
-      <button class="btn btn-ghost" style="width: 100%;" type="button" onclick="openRegister()">Register Your School</button>
+      <button class="btn btn-ghost" style="width: 100%;" onclick="openRegister()">Register Your School</button>
     </div>
   </div>
 </div>
 
 <!-- Register Modal -->
-<div class="modal-overlay" id="registerModal" role="dialog" aria-modal="true" aria-labelledby="regTitle" aria-hidden="true">
+<div class="modal-overlay" id="registerModal" role="dialog" aria-modal="true">
   <div class="modal">
     <div id="regFormView">
       <div class="lock" style="background: var(--primary);"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
-      <h2 id="regTitle">Register School</h2>
+      <h2>Register School</h2>
       <p class="sub">Create an account to generate your secure access token.</p>
       <div class="field">
         <input type="text" id="schoolNameInput" placeholder="e.g. Galeshewe High School" autocomplete="off" maxlength="120" style="padding: 14px 16px;">
@@ -471,10 +567,10 @@
         <input type="email" id="regEmailInput" placeholder="Email address (optional)" autocomplete="email" spellcheck="false" maxlength="254" style="padding: 14px 16px;">
       </div>
       <p class="hint">Add an email and we'll send your token there. You can also use it later if you lose the token.</p>
-      <button class="btn btn-primary" id="registerBtn" type="button">Generate Token</button>
-      <button class="cancel" type="button" onclick="closeRegister()">Cancel</button>
+      <button class="btn btn-primary" id="registerBtn">Generate Token</button>
+      <button class="cancel" onclick="closeRegister()">Cancel</button>
     </div>
-
+    
     <div id="regSuccessView" hidden>
       <div class="lock" style="background: var(--ok);"><svg class="i" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></div>
       <h2>Registration Complete</h2>
@@ -486,7 +582,7 @@
         <button class="btn btn-ghost" id="copyTokenBtn" type="button">Copy token</button>
         <button class="btn btn-ghost" id="regResendBtn" type="button" hidden>Email it again</button>
       </div>
-      <button class="btn btn-primary" type="button" onclick="proceedToLogin()">Proceed to Login</button>
+      <button class="btn btn-primary" onclick="proceedToLogin()">Proceed to Login</button>
     </div>
   </div>
 </div>
@@ -508,6 +604,21 @@
 </div>
 
 <!-- History -->
+<div class="modal-overlay" id="ivModal" role="dialog" aria-modal="true" aria-labelledby="ivModalTitle" aria-hidden="true">
+  <div class="modal left">
+    <h2 id="ivModalTitle">New intervention</h2><p class="sub" id="ivModalSub">Record the support you are giving a learner so you can track whether it works.</p>
+    <div class="field"><label class="lb" for="ivId">Learner ID number</label><input class="plain" id="ivId" inputmode="numeric" maxlength="13" autocomplete="off"></div>
+    <div class="field"><label class="lb" for="ivTitle">What will be done</label><input class="plain" id="ivTitle" maxlength="120" autocomplete="off"></div>
+    <div class="field"><label class="lb" for="ivCat">Category</label><select id="ivCat"><option>Academic</option><option>Attendance</option><option>Wellbeing</option><option>Referral</option><option>Other</option></select></div>
+    <div class="field"><label class="lb" for="ivNotes">Notes (optional)</label><textarea id="ivNotes" maxlength="1000"></textarea></div>
+    <div class="field"><label class="lb" for="ivDue">Due date (optional)</label><input class="plain" type="date" id="ivDue"></div>
+    <p class="mini-note">Do not put sensitive personal details in notes. Anyone with your school token can read them.</p>
+    <div class="btn-row"><button class="btn btn-ghost" id="ivCancel" type="button">Cancel</button><button class="btn btn-primary" id="ivSave" type="button">Save intervention</button></div>
+  </div>
+</div>
+<div class="modal-overlay" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileTitle" aria-hidden="true">
+  <div class="modal left wide"><div id="profileBody"></div><div class="btn-row"><button class="btn btn-ghost" id="profileClose" type="button">Close</button></div></div>
+</div>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" aria-hidden="true">
   <div class="drawer-head"><h3 id="drawerTitle" data-i18n="hist.t">History</h3>
@@ -566,7 +677,7 @@ en: {
 "sc.t":"Keyboard shortcuts","sc.upload":"Choose a file","sc.reset":"Start over","sc.hist":"Open history","sc.theme":"Toggle theme","sc.help":"Show this help","sc.esc":"Close dialogs","close":"Close",
 "toast.csv":"Please upload a .csv file.","toast.big":"That file is too large (25 MB max).","toast.empty":"That file has no data rows.","toast.token":"Please enter a valid API token.",
 "toast.school":"Please enter a valid School ID (letters, numbers, dots, dashes).","toast.invalid":"Invalid token. Please log in again.",
-"toast.api":"Could not reach the API. It may be waking up from sleep, give it a moment and try again.","toast.ingested":"Records ingested successfully.","toast.commitfail":"Failed to ingest: {msg}","toast.cleared":"History cleared.",
+"toast.api":"Could not reach the API. It may be waking up from sleep, so give it a moment and try again.","toast.ingested":"Records ingested successfully.","toast.commitfail":"Failed to ingest: {msg}","toast.cleared":"History cleared.",
 "pdf.t":"Validation summary","pdf.school":"School","pdf.file":"File","pdf.date":"Date","pdf.gen":"Generated by The Data Wrangler. ID numbers are masked in this report."
 },
 af: {
@@ -600,7 +711,7 @@ af: {
 "fix.checksum":"Die laaste syfer stem nie met die res van die ID ooreen nie. Kyk vir 'n tikfout.","fix.dup":"Dieselfde ID as ry {row}. Verwyder die duplikaat of korrigeer die ID.",
 "fix.cols":"Hierdie ry het {got} kolomme maar die opskrif het {want}. Soek 'n verdwaalde of ongeslote komma.","fix.zero":"Excel het 'n voorloopnul laat val. Probeer {id}.",
 "succ.t":"Opname voltooi","succ.p":"Rekords opgeneem: {n}",
-"login.t":"Skoolaanmelding","login.sub":"Voer jou skooltoken in om die werkruimte oop te maak.","login.forgot":"Het jy jou token vergeet?","login.forgotEmail":"Geregistreerde e-posadres","login.sendToken":"E-pos my token","login.checking":"Kontroleer…","toast.reconnect":"Teken jou weer aan…","login.school":"Skool-ID","login.token":"Skooltoken","login.remember":"Hou my aangemeld op hierdie oortjie","login.btn":"Meld aan by werkruimte","login.cancel":"Kanselleer",
+"login.t":"Skoolaanmelding","login.sub":"Voer jou skooltoken in om die werkruimte oop te maak.","login.school":"Skool-ID","login.token":"Skooltoken","login.remember":"Hou my aangemeld op hierdie oortjie","login.btn":"Meld aan by werkruimte","login.cancel":"Kanselleer",
 "hist.t":"Geskiedenis","hist.clear":"Maak skoon","hist.empty":"Nog geen valideringe vir hierdie skool nie.","hist.committed":"Gestoor","hist.dl":"Laai verslag af","hist.sum":"Geldig: {valid} · Foute: {err}",
 "sc.t":"Sleutelbordkortpaaie","sc.upload":"Kies 'n lêer","sc.reset":"Begin oor","sc.hist":"Maak geskiedenis oop","sc.theme":"Wissel tema","sc.help":"Wys hierdie hulp","sc.esc":"Maak dialoë toe","close":"Maak toe",
 "toast.csv":"Laai asseblief 'n .csv-lêer op.","toast.big":"Daardie lêer is te groot (maks. 25 MB).","toast.empty":"Daardie lêer het geen datarye nie.","toast.token":"Voer asseblief 'n geldige API-token in.",
@@ -639,7 +750,7 @@ zu: {
 "fix.checksum":"Inombolo yokugcina ayifani nengxenye esele ye-ID. Hlola iphutha lokuthayipha.","fix.dup":"I-ID efanayo nomugqa {row}. Susa okuphindiwe noma ulungise i-ID.",
 "fix.cols":"Lo mugqa unamakholomu angu-{got} kodwa kudingeka angu-{want}. Funa ikhoma elengeziwe.","fix.zero":"I-Excel ilahle i-zero yokuqala. Zama {id}.",
 "succ.t":"Ukugcina kuphelele","succ.p":"Amarekhodi agciniwe: {n}",
-"login.t":"Ukungena kwesikole","login.sub":"Faka ithokheni yesikole sakho ukuze uvule indawo yokusebenza.","login.forgot":"Ukhohlwe ithokheni yakho?","login.forgotEmail":"Ikheli le-imeyili elibhalisiwe","login.sendToken":"Ngithumelele ithokheni nge-imeyili","login.checking":"Iyahlola…","toast.reconnect":"Iyakungenisa futhi…","login.school":"I-ID yesikole","login.token":"Ithokheni yesikole","login.remember":"Ngigcine ngingenile kule thebhu","login.btn":"Ngena endaweni yokusebenza","login.cancel":"Khansela",
+"login.t":"Ukungena kwesikole","login.sub":"Faka ithokheni yesikole sakho ukuze uvule indawo yokusebenza.","login.school":"I-ID yesikole","login.token":"Ithokheni yesikole","login.remember":"Ngigcine ngingenile kule thebhu","login.btn":"Ngena endaweni yokusebenza","login.cancel":"Khansela",
 "hist.t":"Umlando","hist.clear":"Sula","hist.empty":"Akukabikho ukuqinisekiswa kwalesi sikole.","hist.committed":"Kugciniwe","hist.dl":"Landa umbiko","hist.sum":"Kulungile: {valid} · Amaphutha: {err}",
 "sc.t":"Izinqamuleli zekhibhodi","sc.upload":"Khetha ifayela","sc.reset":"Qala phansi","sc.hist":"Vula umlando","sc.theme":"Shintsha itimu","sc.help":"Bonisa lolu sizo","sc.esc":"Vala amawindi","close":"Vala",
 "toast.csv":"Sicela ulayishe ifayela le-.csv.","toast.big":"Ifayela lilikhulu kakhulu (25 MB ubukhulu).","toast.empty":"Ifayela alinayo imigqa yedatha.","toast.token":"Sicela ufake ithokheni ye-API evumelekile.",
@@ -678,7 +789,7 @@ tn: {
 "fix.checksum":"Nomoro ya bofelo ga e tshwane le karolo e nngwe ya ID. Tlhatlhoba phoso ya go kwala.","fix.dup":"ID e e tshwanang le mola {row}. Tlosa e e boeletsweng kgotsa o baakanye ID.",
 "fix.cols":"Mola ono o na le dikoloma di le {got} mme tlhogo e na le di le {want}. Batla comma e e oketsegileng.","fix.zero":"Excel e latlhile zero ya ntlha. Leka {id}.",
 "succ.t":"Go boloka go felela","succ.p":"Direkoto tse di bolokilweng: {n}",
-"login.t":"Go tsena ga sekolo","login.sub":"Tsenya token ya sekolo sa gago go bula felo fa o dirang teng.","login.forgot":"O lebetse token ya gago?","login.forgotEmail":"Aterese ya imeile e e kwadisitsweng","login.sendToken":"Nthomelele token ka imeile","login.checking":"E a tlhatlhoba…","toast.reconnect":"E go tsenya gape…","login.school":"ID ya sekolo","login.token":"Token ya sekolo","login.remember":"Nthomamise ke tsene mo tab eno","login.btn":"Tsena mo felong fa o dirang teng","login.cancel":"Khansela",
+"login.t":"Go tsena ga sekolo","login.sub":"Tsenya token ya sekolo sa gago go bula felo fa o dirang teng.","login.school":"ID ya sekolo","login.token":"Token ya sekolo","login.remember":"Nthomamise ke tsene mo tab eno","login.btn":"Tsena mo felong fa o dirang teng","login.cancel":"Khansela",
 "hist.t":"Hisitori","hist.clear":"Phimola","hist.empty":"Ga go ise go nne le ditlhomamiso tsa sekolo seno.","hist.committed":"E bolokilwe","hist.dl":"Tsaya pego","hist.sum":"Go siame: {valid} · Diphoso: {err}",
 "sc.t":"Dilotlhaelo tsa keyboard","sc.upload":"Tlhopha faele","sc.reset":"Simolola gape","sc.hist":"Bula hisitori","sc.theme":"Fetola thimi","sc.help":"Bontsha thuso eno","sc.esc":"Tswala difensetere","close":"Tswala",
 "toast.csv":"Tsweetswee tsenya faele ya .csv.","toast.big":"Faele eo e kgolo thata (25 MB e kgolo go gaisa).","toast.empty":"Faele eo ga e na methalo ya data.","toast.token":"Tsweetswee tsenya token ya API e e siameng.",
@@ -700,7 +811,7 @@ const mkStore = n => ({
 const LS = mkStore('localStorage'), SS = mkStore('sessionStorage');
 
 /* =====================================================================
-   PURE HELPERS — START
+   PURE HELPERS (unit-tested) — START
    ===================================================================== */
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -739,6 +850,7 @@ function dateOk(s) {
   return ok(1900 + yy) || ok(2000 + yy);
 }
 
+/* Returns null when valid, otherwise { code, ... } */
 function validateSAID(raw) {
   const s = String(raw ?? '').trim();
   if (!s) return { code: 'missing' };
@@ -817,7 +929,7 @@ function applyI18n() {
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const state = { school: '', token: '', file: null, parsed: null, local: null, server: null, tab: 'summary', onlyIssues: false, issueFilter: 'all', view: 'upload', histId: null };
-const landingPage = $('landingPage'), appWorkspace = $('appWorkspace'), loginModal = $('loginModal'), registerModal = $('registerModal'), keysModal = $('keysModal'), drawer = $('drawer'), scrim = $('scrim');
+const landingPage = $('landingPage'), appWorkspace = $('appWorkspace'), loginModal = $('loginModal'), keysModal = $('keysModal'), drawer = $('drawer'), scrim = $('scrim');
 const fileInput = $('fileInput'), dropZone = $('dropZone'), uploadView = $('uploadView'), fileChip = $('fileChip'), loaderWrap = $('loaderWrap'), resultBox = $('resultBox'), successView = $('successView');
 const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fmtSize = b => b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(1) + ' KB' : (b / 1048576).toFixed(2) + ' MB';
@@ -857,7 +969,6 @@ function openOverlay(el, focusEl) {
 }
 function closeOverlay(restore = true) {
   if (!activeOverlay) return;
-  if (activeOverlay === registerModal) resetRegisterForm();
   activeOverlay.classList.remove('open'); activeOverlay.setAttribute('aria-hidden', 'true'); scrim.classList.remove('open');
   activeOverlay = null; if (restore && lastFocus && lastFocus.focus) lastFocus.focus(); lastFocus = null;
 }
@@ -883,6 +994,7 @@ function showView(name) {
   state.view = name;
   uploadView.hidden = name !== 'upload'; loaderWrap.hidden = name !== 'loading'; resultBox.hidden = name !== 'results'; successView.hidden = name !== 'success';
   fileChip.hidden = !(state.file && (name === 'loading' || name === 'results'));
+  $('periodRow').hidden = !(name === 'upload' || name === 'results');
 }
 function setLoader(text, pct) {
   $('loaderText').textContent = text;
@@ -890,7 +1002,7 @@ function setLoader(text, pct) {
   if (pct == null) { p.classList.add('indet'); f.style.width = ''; } else { p.classList.remove('indet'); f.style.width = pct + '%'; }
 }
 function resetWorkspace() {
-  state.file = null; state.parsed = null; state.local = null; state.server = null; state.histId = null; state.tab = 'summary'; state.onlyIssues = false; state.issueFilter = 'all';
+  state.diag = null; state.file = null; state.parsed = null; state.local = null; state.server = null; state.histId = null; state.tab = 'summary'; state.onlyIssues = false; state.issueFilter = 'all';
   fileInput.value = ''; resultBox.innerHTML = ''; setStep(1); showView('upload');
 }
 
@@ -900,15 +1012,17 @@ function resetWorkspace() {
 function refreshSchoolUI() { $('schoolLabel').textContent = state.school; }
 function enterWorkspace() {
   landingPage.hidden = true; appWorkspace.hidden = false; $('historyBtn').hidden = false;
-  $('navBtn').textContent = t('nav.logout'); refreshSchoolUI(); window.scrollTo({ top: 0, behavior: 'smooth' });
+  $('navBtn').textContent = t('nav.logout'); refreshSchoolUI(); setWs('upload'); window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 function logout() {
   state.token = ''; state.school = ''; SS.del('dw_token'); closeOverlay(false); resetWorkspace();
+  ins.data = null; ins.recs = null; ins.period = null; ins.showAll = false; ivs.list = null; ivs.filter = ''; $('insightsPanel').innerHTML = ''; $('ivPanel').innerHTML = ''; rpt.data = null; rpt.anon = false; $('reportPanel').innerHTML = '';
   appWorkspace.hidden = true; landingPage.hidden = false; $('historyBtn').hidden = true; $('navBtn').textContent = t('nav.access'); window.scrollTo({ top: 0 });
 }
 function openLogin() { $('forgotPanel').hidden = true; openOverlay(loginModal, $('tokenInput')); }
 function flagInvalid(fieldId) { const f = $(fieldId); f.classList.remove('invalid'); void f.offsetWidth; f.classList.add('invalid'); }
 
+/* Asks the server who owns this token. Resolves { ok, status, data }. */
 async function loginRequest(token) {
   const res = await fetch(API_URL + '/login', { method: 'POST', headers: { 'X-Wrangler-Token': token } });
   let data = null; try { data = await res.json(); } catch (_) {}
@@ -937,6 +1051,7 @@ async function authenticate() {
   }
 }
 
+/* ---- Email a token (used at login and after registration) ---- */
 const EMAIL_RE = /^[^@\s]{1,64}@[^@\s]+\.[^@\s]{2,}$/;
 async function sendTokenEmail(email, btn) {
   const label = btn.textContent; btn.disabled = true; btn.textContent = 'Sending…';
@@ -955,17 +1070,16 @@ async function sendTokenEmail(email, btn) {
 
 /* ---- Registration ---- */
 let lastReg = null;
-function resetRegisterForm() {
+function openRegister() { closeOverlay(); $('registerModal').classList.add('open'); setTimeout(() => $('schoolNameInput').focus(), 60); }
+function closeRegister() {
+  $('registerModal').classList.remove('open');
   $('regFormView').hidden = false; $('regSuccessView').hidden = true;
   $('schoolNameInput').value = ''; $('regEmailInput').value = ''; $('newTokenDisplay').textContent = '';
   $('regEmailStatus').hidden = true; $('regResendBtn').hidden = true; lastReg = null;
 }
-function openRegister() { openOverlay(registerModal, $('schoolNameInput')); }
-function closeRegister() { closeOverlay(); }
 function proceedToLogin() {
   const tk = lastReg && lastReg.token;
-  closeOverlay(false);
-  openLogin();
+  closeRegister(); openLogin();
   if (tk) $('tokenInput').value = tk;
 }
 function showRegSuccess(data, email) {
@@ -985,7 +1099,6 @@ $('navBtn').addEventListener('click', () => { state.token ? logout() : openLogin
 $('schoolChip').addEventListener('click', openLogin);
 $('cancelLogin').addEventListener('click', () => closeOverlay());
 loginModal.addEventListener('click', e => { if (e.target === loginModal) closeOverlay(); });
-registerModal.addEventListener('click', e => { if (e.target === registerModal) closeOverlay(); });
 keysModal.addEventListener('click', e => { if (e.target === keysModal) closeOverlay(); });
 $('closeKeys').addEventListener('click', () => closeOverlay());
 $('keysBtn').addEventListener('click', () => openOverlay(keysModal));
@@ -1052,7 +1165,7 @@ function xhrPost(path, file, cb = {}) {
 const detailMsg = j => { const d = j && j.detail; return d == null ? 'Unknown error' : typeof d === 'string' ? d : JSON.stringify(d); };
 
 /* =====================================================================
-   Upload -> local checks -> server validation
+   Upload → local checks → server validation
    ===================================================================== */
 ['dragenter', 'dragover'].forEach(ev => dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('drag'); }));
 ['dragleave', 'drop'].forEach(ev => dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.remove('drag'); }));
@@ -1090,12 +1203,14 @@ async function commit() {
   if (!state.file || !state.server) return;
   setStep(3); setLoader(t('load.commit'), 0); showView('loading');
   try {
-    const res = await xhrPost('/ingest', state.file, { onUpload: p => setLoader(t('load.commit') + ' ' + p + '%', p), onUploadDone: () => setLoader(t('load.commit'), null) });
+    const res = await xhrPost('/ingest?year=' + state.period.year + '&term=' + state.period.term, state.file, { onUpload: p => setLoader(t('load.commit') + ' ' + p + '%', p), onUploadDone: () => setLoader(t('load.commit'), null) });
     if (res.status === 403) { toast(t('toast.invalid'), 'error'); logout(); openLogin(); return; }
     if (res.ok) {
       const n = (res.json && res.json.valid_count) ?? state.server.valid;
       $('ln2').classList.add('fill'); $('st3').classList.remove('active'); $('st3').classList.add('done'); $('st3').querySelector('b').textContent = '✓';
-      $('successText').textContent = t('succ.p', { n }); histMark(state.histId); showView('success'); toast(t('toast.ingested'), 'success'); confetti();
+      $('successText').textContent = t('succ.p', { n }) + ' · ' + state.period.year + ' T' + state.period.term; ins.data = null; ins.recs = null; ins.period = null; ivs.list = null;
+      if (res.json && res.json.history_saved === false) toast('Saved, but the term snapshot could not be stored. Run the Phase 3 SQL in Supabase.', 'error', 9000);
+      histMark(state.histId); showView('success'); toast(t('toast.ingested'), 'success'); confetti();
     } else { setStep(2); showView('results'); toast(t('toast.commitfail', { msg: detailMsg(res.json) }), 'error', 6500); }
   } catch (_) { setStep(2); showView('results'); toast(t('toast.commitfail', { msg: 'network' }), 'error'); }
 }
@@ -1135,6 +1250,7 @@ function renderResults() {
       sv.errors.map((e, i) => '<div class="err-item" style="animation-delay:' + Math.min(i, 15) * 25 + 'ms"><span class="idx">' + (e.row != null ? e.row : i + 1) + '</span><span class="msg">' + esc(e.msg) + '</span></div>').join('') + '</div>';
   } else if (sv && valid > 0 && !issuesN) summary += '<p class="good">✨ ' + esc(t('sum.clean')) + '</p>';
   else if (sv && !valid && !errN) summary += '<p class="muted" style="margin:0">' + esc(t('sum.none')) + '</p>';
+  if (sv && total > 0) summary += '<div id="aiDiag"></div>';
   summary += '<div class="actions"><button class="btn btn-ghost" id="replaceBtn">' + esc(t('btn.another')) + '</button>' +
     (hasReport ? '<button class="btn btn-ghost" id="dlReport">' + esc(t('btn.report')) + '</button>' : '') +
     '<button class="btn btn-ghost" id="pdfBtn">' + esc(t('btn.pdf')) + '</button>' +
@@ -1157,6 +1273,7 @@ function renderResults() {
     '<div role="tabpanel" id="pane-issues" aria-labelledby="tab-issues"' + (S.tab === 'issues' ? '' : ' hidden') + '>' + issuesTab + '</div>';
 
   animateCounts(resultBox);
+  renderDiag();
   requestAnimationFrame(() => requestAnimationFrame(() => { const b = $('barFill'); if (b) b.style.width = pct + '%'; }));
   wireResults();
 }
@@ -1203,38 +1320,11 @@ function wireResults() {
   });
   const only = $('onlyChk'); if (only) only.addEventListener('change', e => {
     state.onlyIssues = e.target.checked;
-    renderResults();
+    const pane = $('pane-preview');
+    if (pane) pane.innerHTML = '<div class="tools"><label>' + esc(t('prev.map')) + ' <select class="sel" id="idColSel">' + /* re-render needed */ '' + '</select></label></div>' + previewTable();
+    renderResults(); // simple re-render
   });
   const issSel = $('issueSel'); if (issSel) issSel.addEventListener('change', e => { state.issueFilter = e.target.value; renderResults(); });
-}
-
-/* =====================================================================
-   Confetti celebration
-   ===================================================================== */
-function confetti() {
-  if (REDUCE) return;
-  const c = $('confetti'), ctx = c.getContext('2d');
-  c.width = window.innerWidth; c.height = window.innerHeight;
-  const cols = ['#0071e3', '#34c759', '#ff9500', '#5e5ce6', '#ff2d55'];
-  const pieces = Array.from({ length: 70 }, () => ({
-    x: Math.random() * c.width, y: -20 - Math.random() * 140,
-    w: 6 + Math.random() * 6, h: 10 + Math.random() * 8,
-    vy: 2 + Math.random() * 3.5, vx: (Math.random() - 0.5) * 3,
-    rot: Math.random() * Math.PI * 2, vr: (Math.random() - 0.5) * 0.15,
-    col: cols[Math.floor(Math.random() * cols.length)]
-  }));
-  let frame = 0;
-  (function step() {
-    ctx.clearRect(0, 0, c.width, c.height);
-    pieces.forEach(p => {
-      p.x += p.vx; p.y += p.vy; p.rot += p.vr;
-      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
-      ctx.fillStyle = p.col; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      ctx.restore();
-    });
-    if (++frame < 130) requestAnimationFrame(step);
-    else ctx.clearRect(0, 0, c.width, c.height);
-  })();
 }
 
 /* =====================================================================
@@ -1328,13 +1418,14 @@ $('clearHist').addEventListener('click', () => { LS.del('dw_hist'); renderHistor
 /* =====================================================================
    Demo canvas
    ===================================================================== */
+const DEMO_MSGS = { 'demo.len': 'ID must be 13 digits', 'demo.missing': 'ID missing' };
 function refreshDemo() {
   const rows = document.querySelectorAll('#canvas .row');
   rows.forEach(r => {
     const tEl = r.querySelector('.tag');
     const ok = r.dataset.result === 'ok';
     tEl.className = 'tag ' + (ok ? 'ok' : 'bad');
-    tEl.textContent = ok ? t('demo.valid') : (r.dataset.msgkey ? t(r.dataset.msgkey) : '');
+    tEl.textContent = ok ? t('demo.valid') : (r.dataset.msgkey ? DEMO_MSGS[r.dataset.msgkey] : '');
   });
 }
 (function initCanvas() {
@@ -1350,7 +1441,7 @@ function refreshDemo() {
     r.dataset.state = state;
     const tEl = r.querySelector('.tag');
     tEl.className = 'tag ' + (state === 'pending' ? 'pend' : state === 'ok' ? 'ok' : 'bad');
-    tEl.textContent = state === 'pending' ? t('demo.checking') : state === 'ok' ? t('demo.valid') : (r.dataset.msgkey ? t(r.dataset.msgkey) : '');
+    tEl.textContent = state === 'pending' ? t('demo.checking') : state === 'ok' ? t('demo.valid') : (r.dataset.msgkey ? DEMO_MSGS[r.dataset.msgkey] : '');
   }
 
   refreshDemo();
@@ -1415,18 +1506,405 @@ const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting
 document.querySelectorAll('.reveal').forEach((el, i) => { el.style.transitionDelay = (i % 3) * 80 + 'ms'; io.observe(el); });
 
 /* =====================================================================
+   AI diagnosis of a validated file (calls /diagnose; only error-type counts leave the server)
+   ===================================================================== */
+const fileKey = f => f ? f.name + ':' + f.size + ':' + f.lastModified : '';
+function renderDiag() {
+  const box = $('aiDiag'); if (!box) return;
+  const dg = state.diag && state.diag.key === fileKey(state.file) ? state.diag : null;
+  let h = '<div class="p3-card diag-card"><div class="p3-head" style="margin-bottom:8px"><div><h4 style="font-size:16px">AI diagnosis</h4><p class="cap" style="margin:0">What is wrong in this file, and what to fix first.</p></div>' +
+    '<button class="btn btn-ghost btn-sm" id="diagBtn"' + (dg && dg.loading ? ' disabled' : '') + '>' + (dg && dg.loading ? 'Analysing…' : dg && dg.data ? 'Run again' : 'Diagnose with AI') + '</button></div>';
+  if (!dg) h += '<p class="mini-note" style="margin:0">Only the number of errors in each category is analysed. Names, ID numbers and rows never leave your school’s data.</p>';
+  else if (dg.loading) h += '<div style="display:flex;gap:12px;align-items:center"><div class="loader" style="width:22px;height:22px;border-width:3px;margin:0"></div><span class="mini-note" style="margin:0">Analysing… this can take up to 30 seconds.</span></div>';
+  else if (dg.error) h += '<div class="notice"><span>' + esc(dg.error) + '</span></div>';
+  else if (dg.data) {
+    const d = dg.data.diagnosis || {}, ai = dg.data.source === 'gemini', sev = ['low', 'medium', 'high'].includes(d.severity) ? d.severity : 'medium';
+    h += '<div class="' + (ai ? 'ai-box' : 'diag-plain') + '"><div class="tag2">' + (ai ? 'AI diagnosis · ' + esc(dg.data.model || 'model') : 'Rule-based diagnosis') + ' <span class="pill ' + (sev === 'high' ? 'bad' : sev === 'medium' ? 'warn' : 'ok') + '" style="margin-left:6px">' + esc(sev) + ' severity</span></div>' +
+      '<p>' + esc(d.summary || '') + '</p>' +
+      (d.patterns && d.patterns.length ? '<b style="font-size:13px">Patterns</b><ul>' + d.patterns.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '') +
+      (d.recommendations && d.recommendations.length ? '<b style="font-size:13px">What to do</b><ul>' + d.recommendations.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '') +
+      (d.manual_review_required ? '<p class="mini-note" style="color:var(--warn);font-weight:600">Identity problems must be checked manually against official records. Do not correct ID numbers by guessing.</p>' : '') +
+      (dg.data.note ? '<p class="mini-note">' + esc(dg.data.note) + '</p>' : '') +
+      (ai ? '<p class="mini-note">Generated by AI from error counts only. Check it before acting.</p>' : '') + '</div>';
+  }
+  box.innerHTML = h + '</div>';
+  $('diagBtn').onclick = runDiagnosis;
+}
+async function runDiagnosis() {
+  if (!state.file) return;
+  const key = fileKey(state.file); state.diag = { key, loading: true }; renderDiag();
+  try {
+    const res = await xhrPost('/diagnose?year=' + state.period.year + '&term=' + state.period.term, state.file);
+    if (res.status === 403) { toast(t('toast.invalid'), 'error'); logout(); openLogin(); return; }
+    if (!res.ok) throw new Error(detailMsg(res.json));
+    state.diag = { key, data: res.json };
+  } catch (e) { state.diag = { key, error: e.message === 'network' || e.message === 'timeout' ? t('toast.api') : e.message }; }
+  renderDiag();
+}
+
+/* =====================================================================
+   School Report: one printable A4 document per term (print / Save as PDF)
+   ===================================================================== */
+const rpt = { data: null, anon: false, loading: false, error: '' };
+const CAT_LABEL = { identity_validation: 'ID number problems', subject_validation: 'Unrecognised subject names', grade_validation: 'Grade outside 1 to 12', sba_validation: 'SBA mark outside 0 to 100', attendance_validation: 'Attendance outside 0.0 to 1.0', column_structure: 'Wrong number of columns', numeric_parsing: 'Values that are not numbers', other: 'Other problems' };
+const fmtDate = iso => { try { return new Date(iso).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (_) { return String(iso || ''); } };
+const sevPill = sev => '<span class="pill ' + (sev === 'high' ? 'bad' : sev === 'medium' ? 'warn' : 'ok') + '">' + esc(sev) + ' severity</span>';
+
+async function openReport() {
+  setWs('report'); rpt.loading = true; rpt.error = ''; rpt.data = null; renderReport();
+  try { rpt.data = await api('GET', '/report' + periodQS(ins.period)); }
+  catch (e) { if (e.message !== 'auth') rpt.error = /Failed to fetch|NetworkError/i.test(e.message) ? t('toast.api') : e.message; }
+  rpt.loading = false; if (state.ws === 'report') renderReport();
+}
+
+function renderReport() {
+  const P = $('reportPanel'), d = rpt.data;
+  const back = '<button class="btn btn-ghost btn-sm" id="repBack">← Back to Insights</button>';
+  if (rpt.loading) { P.innerHTML = '<div class="loader-wrap"><div class="loader"></div><p>Building the report…</p></div>'; return; }
+  if (rpt.error) { P.innerHTML = '<div class="notice"><span>' + esc(rpt.error) + '</span>' + back + '</div>'; $('repBack').onclick = () => setWs('insights'); return; }
+  if (!d || d.empty) { P.innerHTML = '<div class="empty">No term data to report on yet.<div class="actions" style="justify-content:center">' + back + '</div></div>'; $('repBack').onclick = () => setWs('insights'); return; }
+  P.innerHTML = '<div class="rep-bar no-print">' + back +
+    '<label class="rep-anon"><input type="checkbox" id="repAnon"' + (rpt.anon ? ' checked' : '') + '> Anonymise learners (hide names and ID numbers)</label>' +
+    '<button class="btn btn-primary btn-sm" id="repPrint">Print / Save as PDF</button></div>' +
+    (d.narrative ? '' : '<p class="mini-note no-print" style="margin:0 0 12px">Tip: generate recommendations in Insights first to include the written briefing in this report.</p>') +
+    '<div class="rpt"><div class="paper">' + reportInner(d, rpt.anon) + '</div></div>';
+  $('repBack').onclick = () => setWs('insights');
+  $('repAnon').onchange = e => { rpt.anon = e.target.checked; renderReport(); };
+  $('repPrint').onclick = printSchoolReport;
+}
+
+function reportInner(d, anon) {
+  const s = d.summary, lbl = s.period.label, rk = s.risk, v = d.saved && d.saved.validation, dg = d.saved && d.saved.diagnosis;
+  const ids = new Map();
+  const who = (id, name) => { if (anon) { if (!ids.has(id)) ids.set(id, 'Learner ' + (ids.size + 1)); return esc(ids.get(id)); } return '<b>' + esc(name || 'Unnamed') + '</b><br><span class="rmuted">' + esc(maskValue(id)) + '</span>'; };
+  const tot = Math.max(1, rk.high + rk.medium + rk.low), high = rk.high;
+  let h = '<h1>School report</h1><p class="rsub">' + esc(d.school_name) + ' · ' + esc(lbl) + ' · generated ' + esc(fmtDate(d.generated_at)) + (anon ? ' · learners anonymised' : '') + '</p>';
+
+  // 1 Summary
+  const ws = s.by_subject[0];
+  h += '<section><h2>1. Summary</h2><div class="kpis">' +
+    [['Learners', s.learners], ['Average SBA', pct(s.avg_sba)], ['Average attendance', pct(s.attendance_pct)], ['High risk', rk.high], ['Medium risk', rk.medium], ['Low risk', rk.low]].map(k => '<div class="kpi"><b>' + esc(String(k[1])) + '</b><span>' + k[0] + '</span></div>').join('') + '</div>' +
+    '<p>' + s.learners + ' learner' + (s.learners !== 1 ? 's were' : ' was') + ' assessed in ' + esc(lbl) + '. The average SBA mark was ' + pct(s.avg_sba) + ' and average attendance ' + pct(s.attendance_pct) + '. ' +
+    (high ? high + ' learner' + (high !== 1 ? 's (' : ' (') + Math.round(100 * high / tot) + '%) ' + (high !== 1 ? 'are' : 'is') + ' at high risk. ' : 'No learners are at high risk. ') +
+    (ws ? 'The weakest subject is ' + esc(ws.subject) + ' (' + Math.round(ws.avg_sba) + '% average, ' + Math.round(ws.pass_rate) + '% of learners at or above 50%).' : '') + '</p></section>';
+
+  // 2 Data quality
+  h += '<section><h2>2. Data quality of the upload</h2>';
+  if (v) {
+    const cats = Object.entries(v.error_categories || {}).sort((a, b) => b[1] - a[1]);
+    h += '<table><tr><th>Rows checked</th><th>Valid and saved</th><th>Rejected</th></tr><tr><td>' + v.total_rows_processed + '</td><td>' + v.valid_rows + '</td><td>' + v.invalid_rows + '</td></tr></table>' +
+      (cats.length ? '<table><tr><th>Problem type</th><th>Rows</th></tr>' + cats.map(c => '<tr><td>' + esc(CAT_LABEL[c[0]] || c[0]) + '</td><td>' + c[1] + '</td></tr>').join('') + '</table>' : '<p>No rows were rejected.</p>');
+  } else h += '<p class="rmuted">No upload record is stored for this term (uploads made before reports were enabled are not included).</p>';
+  if (dg) {
+    const ai = d.saved.diagnosis_source === 'gemini';
+    h += '<div class="rbox"><div class="rtag">' + (ai ? 'AI diagnosis · ' + esc(d.saved.diagnosis_model || 'model') : 'Rule-based diagnosis') + ' ' + sevPill(dg.severity) + '</div><p>' + esc(dg.summary || '') + '</p>' +
+      (dg.patterns && dg.patterns.length ? '<ul>' + dg.patterns.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '') +
+      (dg.recommendations && dg.recommendations.length ? '<b>What to do</b><ul>' + dg.recommendations.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '') +
+      (dg.manual_review_required ? '<p><b>ID numbers must be checked manually against official records.</b></p>' : '') +
+      (ai ? '<p class="rmuted">Generated by AI from error counts only. Check before acting.</p>' : '') + '</div>';
+  } else h += '<p class="rmuted">No diagnosis was saved for this term. Use "Diagnose with AI" when uploading.</p>';
+  h += '</section>';
+
+  // 3 Performance
+  h += '<section><h2>3. Performance</h2>';
+  if (s.trend.length >= 2) h += '<h3>Trend across terms</h3>' + lineChart(s.trend, [{ key: 'avg_sba', name: 'Average SBA', color: 'var(--primary)' }, { key: 'attendance_pct', name: 'Attendance', color: 'var(--ok)', dash: true }]);
+  h += '<h3>Subjects, weakest first (average SBA, line = 50% pass mark)</h3>' + hbars(s.by_subject.slice(0, 12).map(x => ({ label: x.subject, v: x.avg_sba, text: Math.round(x.avg_sba) + '%' })), { max: 100, mark: 50, warnBelow: 50 }) +
+    '<h3>Grades</h3><table><tr><th>Grade</th><th>Learners</th><th>Average SBA</th><th>Attendance</th><th>High risk</th></tr>' + s.by_grade.map(g => '<tr><td>' + g.grade + '</td><td>' + g.learners + '</td><td>' + pct(g.avg_sba) + '</td><td>' + pct(g.attendance_pct) + '</td><td>' + g.high_risk + '</td></tr>').join('') + '</table>' +
+    '<h3>Attendance</h3><table><tr>' + s.attendance_buckets.map(b => '<th>' + esc(b.label) + '</th>').join('') + '</tr><tr>' + s.attendance_buckets.map(b => '<td>' + b.learners + (b.learners === 1 ? ' learner' : ' learners') + '</td>').join('') + '</tr></table></section>';
+
+  // 4 At risk
+  const list = s.at_risk.slice(0, 25);
+  h += '<section><h2>4. Learners needing attention</h2>' + (list.length ? '<table><thead><tr><th>Learner</th><th>Risk</th><th>Why</th><th>Support</th></tr></thead><tbody>' + list.map(r =>
+    '<tr><td>' + who(r.id_number, r.name) + '</td><td>' + riskPill(r.level, r.score) + '</td><td>' + esc(r.factors.map(f => f.label).join('; ')) + '</td><td>' + (r.has_active_intervention ? 'In support' : 'None yet') + '</td></tr>').join('') + '</tbody></table>' +
+    (s.at_risk_total > list.length ? '<p class="rmuted">Showing the ' + list.length + ' highest-risk of ' + s.at_risk_total + ' learners.</p>' : '') : '<p>No learners are at medium or high risk this term.</p>') + '</section>';
+
+  // 5 Interventions
+  const ic = s.interventions.counts, imp = s.interventions.impact, ivs = (d.interventions || []).filter(i => i.status !== 'cancelled').slice(0, 20);
+  h += '<section><h2>5. Interventions</h2><p>Planned: <b>' + ic.planned + '</b> · In progress: <b>' + ic.in_progress + '</b> · Completed: <b>' + ic.completed + '</b> · Overdue: <b>' + (d.overdue_count || 0) + '</b>. ' +
+    '<b>' + s.interventions.high_risk_without_active + '</b> high-risk learner' + (s.interventions.high_risk_without_active !== 1 ? 's have' : ' has') + ' no active support.' +
+    (imp.learners_measured ? ' Learners with support moved ' + (imp.avg_sba_change > 0 ? '+' : '') + imp.avg_sba_change + ' SBA points on average since support began (' + imp.improved + ' of ' + imp.learners_measured + ' improved). This shows movement, not proof of cause.' : '') + '</p>' +
+    (ivs.length ? '<table><thead><tr><th>Learner</th><th>Intervention</th><th>Category</th><th>Status</th><th>Due</th><th>Outcome</th></tr></thead><tbody>' + ivs.map(i =>
+      '<tr><td>' + who(i.id_number, i.name) + '</td><td>' + esc(i.title) + '</td><td>' + esc(i.category) + '</td><td>' + esc(STATUS_LABEL[i.status] || i.status) + '</td><td>' + esc(i.due_date || '–') + '</td><td>' + (anon ? '–' : esc(i.outcome || '–')) + '</td></tr>').join('') + '</tbody></table>' : '') + '</section>';
+
+  // 6 Recommendations
+  h += '<section><h2>6. Recommendations</h2>';
+  if (d.narrative) h += '<div class="rbox"><div class="rtag">AI briefing · ' + esc(d.narrative_model || 'model') + '</div>' + d.narrative.split(/\n+/).filter(Boolean).map(l => /^[-*•]\s+/.test(l.trim()) ? '<p class="rli">• ' + esc(l.trim().replace(/^[-*•]\s+/, '')) + '</p>' : '<p>' + esc(l.trim()) + '</p>').join('') + '<p class="rmuted">Written by AI from anonymised school-level statistics. Check before acting.</p></div>';
+  h += d.recommendations.map(x => '<div class="rrec"><span class="pill ' + (x.priority === 'high' ? 'bad' : x.priority === 'medium' ? 'warn' : 'neutral') + '">' + esc(x.priority) + '</span><div><b>' + esc(x.title) + '</b><br>' + esc(x.detail) + '</div></div>').join('') + '</section>';
+
+  // 7 Method
+  h += '<section><h2>7. How to read this report</h2><ul class="rmuted">' +
+    '<li>Risk score: average SBA below 50% (more below 40%), below 50% in three or more subjects, attendance below 90%, 80% or 70%, and a fall in marks (8+ points) or attendance (10+ points) since the previous term. A score of 50 or more is high risk, 25 or more is medium.</li>' +
+    '<li>Behaviour and discipline data are not part of the SA-SAMS export and are not assessed.</li>' +
+    '<li>Figures come from the CSV uploads saved for each term. Uploading a term again replaces that term.</li>' +
+    '<li>Risk levels are a prompt for a professional conversation, not a decision about a learner.</li></ul>' +
+    '<p class="rmuted">Generated by The Data Wrangler · ' + esc(fmtDate(d.generated_at)) + '</p></section>';
+  return h;
+}
+
+function printSchoolReport() {
+  const d = rpt.data; if (!d) return;
+  $('printReport').innerHTML = '<div class="rpt"><div class="paper">' + reportInner(d, rpt.anon) + '</div></div>';
+  const old = document.title; document.title = 'School report - ' + d.school_name + ' - ' + d.summary.period.label;
+  const restore = () => { document.title = old; window.removeEventListener('afterprint', restore); };
+  window.addEventListener('afterprint', restore); setTimeout(restore, 60000);
+  window.print();
+}
+
+/* Confetti burst on success (canvas #confetti). Never throws; skipped for reduced-motion users. */
+function confetti() {
+  try {
+    if (REDUCE) return;
+    const cv = $('confetti'); if (!cv || !cv.getContext) return;
+    const ctx = cv.getContext('2d'), dpr = window.devicePixelRatio || 1, W = cv.width = innerWidth * dpr, H = cv.height = innerHeight * dpr;
+    const cols = ['#0071e3', '#34c759', '#ff9f0a', '#ff453a', '#af52de', '#5ac8fa'];
+    const ps = Array.from({ length: 110 }, () => ({ x: W / 2 + (Math.random() - .5) * W * .3, y: H * .35, vx: (Math.random() - .5) * 16 * dpr, vy: (-Math.random() * 14 - 4) * dpr, s: (4 + Math.random() * 6) * dpr, c: cols[Math.floor(Math.random() * cols.length)], r: Math.random() * 6, vr: (Math.random() - .5) * .4 }));
+    let f = 0;
+    (function tick() {
+      ctx.clearRect(0, 0, W, H);
+      ps.forEach(p => { p.vy += .45 * dpr; p.x += p.vx; p.y += p.vy; p.r += p.vr; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); ctx.restore(); });
+      if (++f < 110) requestAnimationFrame(tick); else ctx.clearRect(0, 0, W, H);
+    })();
+  } catch (_) {}
+}
+
+/* =====================================================================
+   Phase 3: term snapshots, Insights, Interventions
+   (new screens are English only for now; the original screens keep all four languages)
+   ===================================================================== */
+const ins = { data: null, recs: null, period: null, loading: false, showAll: false, error: '' };
+const ivs = { list: null, filter: '', loading: false, error: '' };
+const pct = v => v == null ? '–' : (Math.round(v * 10) / 10) + '%';
+const RISK_LABEL = { high: 'High', medium: 'Medium', low: 'Low' };
+const riskPill = (lvl, score) => '<span class="pill ' + (lvl === 'high' ? 'bad' : lvl === 'medium' ? 'warn' : 'ok') + '">' + RISK_LABEL[lvl] + (score != null ? ' · ' + score : '') + '</span>';
+const periodQS = p => p ? '?year=' + p.year + '&term=' + p.term : '';
+
+async function api(method, path, body) {
+  const res = await fetch(API_URL + path, {
+    method, headers: Object.assign({ 'X-Wrangler-Token': state.token }, body ? { 'Content-Type': 'application/json' } : {}),
+    body: body ? JSON.stringify(body) : undefined
+  });
+  let json = null; try { json = await res.json(); } catch (_) {}
+  if (res.status === 403) { toast(t('toast.invalid'), 'error'); logout(); openLogin(); throw new Error('auth'); }
+  if (!res.ok) throw new Error(detailMsg(json));
+  return json;
+}
+
+/* ---- term / year picker (applies to the upload being committed) ---- */
+function calendarPeriod() { const d = new Date(); return { year: d.getFullYear(), term: Math.min(4, Math.floor(d.getMonth() / 3) + 1) }; }
+state.period = calendarPeriod(); state.ws = 'upload';
+(function initPeriodPicker() {
+  const y = new Date().getFullYear();
+  $('yearSel').innerHTML = [y - 1, y, y + 1].map(v => '<option>' + v + '</option>').join('');
+  $('yearSel').value = state.period.year; $('termSel').value = state.period.term;
+  $('yearSel').addEventListener('change', e => { state.period.year = +e.target.value; });
+  $('termSel').addEventListener('change', e => { state.period.term = +e.target.value; });
+})();
+
+/* ---- workspace tabs ---- */
+function setWs(name) {
+  state.ws = name;
+  $('uploadPanel').hidden = name !== 'upload'; $('insightsPanel').hidden = name !== 'insights'; $('ivPanel').hidden = name !== 'interventions'; $('reportPanel').hidden = name !== 'report';
+  document.querySelectorAll('#wsTabs .tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.ws === (name === 'report' ? 'insights' : name))));
+  if (name === 'insights') loadInsights(); else if (name === 'interventions') loadInterventions(); else if (name === 'report') renderReport();
+}
+$('wsTabs').addEventListener('click', e => { const b = e.target.closest('[data-ws]'); if (b) setWs(b.dataset.ws); });
+
+/* ---- chart helpers (plain SVG/CSS, no libraries) ---- */
+function hbars(rows, opts = {}) {
+  if (!rows.length) return '<p class="cap">No data.</p>';
+  const max = opts.max || Math.max(...rows.map(r => r.v), 1);
+  return rows.map(r => '<div class="hb"><span class="hl" title="' + esc(r.label) + '">' + esc(r.label) + '</span>' +
+    '<div class="ht" role="img" aria-label="' + esc(r.label + ': ' + r.text) + '"><i class="' + (opts.warnBelow != null && r.v < opts.warnBelow ? 'low' : '') + '" style="width:' + Math.max(1, r.v / max * 100) + '%"></i>' +
+    (opts.mark != null ? '<u style="left:' + opts.mark / max * 100 + '%"></u>' : '') + '</div><b>' + esc(r.text) + '</b></div>').join('');
+}
+function lineChart(points, series) {
+  const W = 340, H = 200, L = 30, R = 26, T = 16, B = 28, n = points.length;
+  const X = i => n === 1 ? (L + W - R) / 2 : L + i * (W - L - R) / (n - 1), Y = v => T + (100 - v) / 100 * (H - T - B);
+  let g = [0, 50, 100].map(v => '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="var(--border)" stroke-dasharray="' + (v === 50 ? '4 4' : '0') + '"/><text x="' + (L - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + v + '</text>').join('');
+  g += points.map((p, i) => '<text x="' + X(i) + '" y="' + (H - 8) + '" text-anchor="middle">' + esc(p.label) + '</text>').join('');
+  const body = series.map(s => {
+    const pts = points.map((p, i) => p[s.key] == null ? null : [X(i), Y(p[s.key]), p[s.key]]).filter(Boolean);
+    return '<polyline fill="none" stroke="' + s.color + '" stroke-width="2.5" ' + (s.dash ? 'stroke-dasharray="6 4" ' : '') + 'points="' + pts.map(p => p[0] + ',' + p[1]).join(' ') + '"/>' +
+      pts.map((p, i) => '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="4" fill="' + s.color + '"><title>' + esc(s.name + ': ' + p[2] + '%') + '</title></circle>' +
+        (i === pts.length - 1 ? '<text x="' + p[0] + '" y="' + (p[1] - 9) + '" text-anchor="' + (n === 1 ? 'middle' : 'end') + '" style="fill:' + s.color + ';font-weight:700">' + p[2] + '%</text>' : '')).join('');
+  }).join('');
+  const legend = '<div class="legend" style="display:flex;gap:16px;margin-top:8px">' + series.map(s => '<div><i style="background:' + s.color + '"></i>' + esc(s.name) + '</div>').join('') + '</div>';
+  return '<svg class="line" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(series.map(s => s.name).join(' and ') + ' by term') + '">' + g + body + '</svg>' + legend;
+}
+
+/* ---- Insights ---- */
+async function loadInsights(force) {
+  if (ins.loading) return;
+  if (ins.data && !force) { renderInsights(); return; }
+  ins.loading = true; ins.error = ''; renderInsights();
+  try { ins.data = await api('GET', '/analytics/summary' + periodQS(ins.period)); if (!ins.data.empty) ins.period = { year: ins.data.period.year, term: ins.data.period.term }; }
+  catch (e) { if (e.message !== 'auth') ins.error = /Failed to fetch|NetworkError/i.test(e.message) ? t('toast.api') : e.message; }
+  ins.loading = false; if (state.ws === 'insights') renderInsights();
+}
+function renderInsights() {
+  const P = $('insightsPanel'), d = ins.data;
+  if (ins.loading) { P.innerHTML = '<div class="loader-wrap"><div class="loader"></div><p>Crunching the numbers…</p></div>'; return; }
+  if (ins.error) { P.innerHTML = '<div class="notice"><span>' + esc(ins.error) + '</span><button class="btn btn-ghost btn-sm" id="insRetry">Try again</button></div>'; $('insRetry').onclick = () => loadInsights(true); return; }
+  if (!d || d.empty) {
+    P.innerHTML = '<div class="empty"><h3 style="color:var(--text);margin:0 0 6px">No term data yet</h3>Upload a CSV, choose its term and year, and commit it. Insights appear here once a term has been saved.' +
+      '<div class="actions" style="justify-content:center"><button class="btn btn-primary" id="insGo">Go to upload</button></div></div>';
+    $('insGo').onclick = () => setWs('upload'); return;
+  }
+  const rk = d.risk, tot = Math.max(1, rk.high + rk.medium + rk.low);
+  const opts = d.available_periods.map(p => '<option value="' + p.year + '-' + p.term + '"' + (p.year === d.period.year && p.term === d.period.term ? ' selected' : '') + '>' + esc(p.label) + '</option>').join('');
+  const trendOK = d.trend.length >= 2;
+  const rows = ins.showAll ? d.at_risk : d.at_risk.slice(0, 15);
+  const table = d.at_risk.length ? '<div class="tbl-wrap"><table class="p3"><thead><tr><th>Learner</th><th>Risk</th><th>Why</th><th></th></tr></thead><tbody>' + rows.map(r =>
+    '<tr><td><b>' + esc(r.name || 'Unnamed') + '</b><div class="cap" style="margin:2px 0 0">' + esc(maskValue(r.id_number)) + '</div></td><td>' + riskPill(r.level, r.score) + '</td>' +
+    '<td class="why">' + esc(r.factors.map(f => f.label).join(' · ') || '–') + '</td><td style="white-space:nowrap">' +
+    (r.has_active_intervention ? '<span class="pill neutral">In support</span> ' : '<button class="btn btn-ghost btn-sm" data-support="' + esc(r.id_number) + '">Add support</button> ') +
+    '<button class="btn btn-ghost btn-sm" data-profile="' + esc(r.id_number) + '">Profile</button></td></tr>').join('') + '</tbody></table></div>' +
+    (d.at_risk_total > rows.length ? '<div class="actions"><button class="btn btn-ghost btn-sm" id="showAllBtn">Show all ' + d.at_risk_total + '</button></div>' : '') : '<p class="good">No learners are at medium or high risk this term.</p>';
+  const imp = d.interventions.impact;
+  P.innerHTML =
+    '<div class="p3-head"><div><h3>' + esc(d.school_name || state.school) + ' · ' + esc(d.period.label) + '</h3><p class="sub" style="margin:2px 0 0;color:var(--muted);font-size:13.5px">Marks and attendance from the term snapshots you committed.</p></div>' +
+    '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><label style="font-size:13px;font-weight:600">Term <select class="sel" id="insPeriod">' + opts + '</select></label><button class="btn btn-primary btn-sm" id="repBtn">School report</button></div></div>' +
+    '<div class="stats"><div class="stat"><div class="n">' + d.learners + '</div><div class="l">Learners</div></div><div class="stat"><div class="n">' + pct(d.avg_sba) + '</div><div class="l">Average SBA</div></div>' +
+    '<div class="stat"><div class="n">' + pct(d.attendance_pct) + '</div><div class="l">Average attendance</div></div><div class="stat ' + (rk.high ? 'bad' : 'ok') + '"><div class="n">' + rk.high + '</div><div class="l">High-risk learners</div></div></div>' +
+    '<div class="p3-grid">' +
+    '<div class="p3-card"><h4>Risk levels</h4><p class="cap">Rule-based score from marks, attendance and change since last term.</p>' +
+      '<div class="riskbar" role="img" aria-label="' + rk.high + ' high, ' + rk.medium + ' medium, ' + rk.low + ' low risk learners"><i class="high" style="width:' + rk.high / tot * 100 + '%"></i><i class="medium" style="width:' + rk.medium / tot * 100 + '%"></i><i class="low" style="width:' + rk.low / tot * 100 + '%"></i></div>' +
+      '<div class="legend"><div><i style="background:var(--err)"></i>High<b>' + rk.high + '</b></div><div><i style="background:var(--warn)"></i>Medium<b>' + rk.medium + '</b></div><div><i style="background:var(--ok)"></i>Low<b>' + rk.low + '</b></div></div></div>' +
+    '<div class="p3-card"><h4>Trend across terms</h4><p class="cap">Average SBA and attendance, all learners.</p>' +
+      (trendOK ? lineChart(d.trend, [{ key: 'avg_sba', name: 'Average SBA', color: 'var(--primary)' }, { key: 'attendance_pct', name: 'Attendance', color: 'var(--ok)', dash: true }]) : '<p class="cap">Upload another term to see trends.</p>') + '</div>' +
+    '<div class="p3-card"><h4>Subjects, weakest first</h4><p class="cap">Average SBA. The line marks the 50% pass mark.</p>' + hbars(d.by_subject.slice(0, 10).map(s => ({ label: s.subject, v: s.avg_sba, text: Math.round(s.avg_sba) + '%' })), { max: 100, mark: 50, warnBelow: 50 }) + '</div>' +
+    '<div class="p3-card"><h4>Grades</h4><p class="cap">Average SBA by grade.</p>' + hbars(d.by_grade.map(g => ({ label: 'Grade ' + g.grade, v: g.avg_sba || 0, text: pct(g.avg_sba) })), { max: 100, mark: 50, warnBelow: 50 }) + '</div>' +
+    '<div class="p3-card"><h4>Attendance</h4><p class="cap">Learners per attendance band.</p>' + hbars(d.attendance_buckets.map(b => ({ label: b.label, v: b.learners, text: String(b.learners) }))) + '</div>' +
+    '<div class="p3-card"><h4>Interventions</h4><p class="cap">Support recorded for learners.</p>' +
+      '<div class="legend"><div>Planned<b>' + d.interventions.counts.planned + '</b></div><div>In progress<b>' + d.interventions.counts.in_progress + '</b></div><div>Completed<b>' + d.interventions.counts.completed + '</b></div></div>' +
+      '<p class="mini-note"><b>' + d.interventions.high_risk_without_active + '</b> high-risk learner(s) have no active support.' +
+      (imp.learners_measured ? ' Supported learners moved ' + (imp.avg_sba_change > 0 ? '+' : '') + imp.avg_sba_change + ' SBA points on average (' + imp.improved + ' of ' + imp.learners_measured + ' improved). That shows movement, not proof of cause.' : '') + '</p></div>' +
+    '</div>' +
+    '<div class="p3-card full" id="recCard"></div>' +
+    '<div class="p3-card full" style="margin-top:16px"><h4>Learners needing attention (' + d.at_risk_total + ')</h4><p class="cap">Behaviour data is not in the SA-SAMS export, so risk uses marks and attendance only.</p>' + table + '</div>';
+  renderRecs();
+  $('repBtn').onclick = openReport;
+  $('insPeriod').onchange = e => { const [y, tm] = e.target.value.split('-').map(Number); ins.period = { year: y, term: tm }; ins.recs = null; ins.showAll = false; ins.data = null; loadInsights(); };
+  const sa = $('showAllBtn'); if (sa) sa.onclick = () => { ins.showAll = true; renderInsights(); };
+}
+function renderRecs() {
+  const c = $('recCard'); if (!c) return; const r = ins.recs;
+  let h = '<div class="p3-head" style="margin-bottom:10px"><div><h4 style="font-size:16px">Recommendations</h4><p class="cap" style="margin:0">Practical next steps for this term.</p></div><button class="btn btn-primary btn-sm" id="recBtn"' + (ins.recLoading ? ' disabled' : '') + '>' + (ins.recLoading ? 'Working…' : r ? 'Refresh' : 'Generate recommendations') + '</button></div>';
+  if (ins.recLoading) h += '<p class="mini-note">The first request can take up to a minute while the AI model starts up.</p>';
+  if (ins.recError) h += '<div class="notice"><span>' + esc(ins.recError) + '</span></div>';
+  if (r) {
+    if (r.narrative) {
+      const lines = r.narrative.split(/\n+/).map(s => s.trim()).filter(Boolean), bullets = lines.filter(l => /^[-*•]\s+/.test(l)), plain = lines.filter(l => !/^[-*•]\s+/.test(l));
+      h += '<div class="ai-box"><div class="tag2">AI briefing · ' + esc(r.model || 'model') + '</div>' + plain.map(l => '<p>' + esc(l) + '</p>').join('') +
+        (bullets.length ? '<ul>' + bullets.map(l => '<li>' + esc(l.replace(/^[-*•]\s+/, '')) + '</li>').join('') + '</ul>' : '') +
+        '<p class="mini-note" style="margin-top:8px">Written from anonymised school-level statistics only. No learner names or ID numbers are sent to the model. Check it before acting.</p></div>';
+    } else if (r.model_note) h += '<p class="mini-note">' + esc(r.model_note) + '</p>';
+    h += r.recommendations.map(x => '<div class="rec"><span class="pill ' + (x.priority === 'high' ? 'bad' : x.priority === 'medium' ? 'warn' : 'neutral') + '">' + esc(x.priority) + '</span><div><b>' + esc(x.title) + '</b><span class="d">' + esc(x.detail) + '</span></div></div>').join('');
+  } else if (!ins.recLoading) h += '<p class="mini-note">Rule-based recommendations are always available. If an AI model is connected, it adds a written briefing.</p>';
+  c.innerHTML = h;
+  $('recBtn').onclick = async () => {
+    ins.recLoading = true; ins.recError = ''; renderRecs();
+    try { ins.recs = await api('POST', '/recommendations' + periodQS(ins.period), {}); } catch (e) { if (e.message !== 'auth') ins.recError = e.message; }
+    ins.recLoading = false; if (state.ws === 'insights') renderRecs();
+  };
+}
+$('insightsPanel').addEventListener('click', e => {
+  const s = e.target.closest('[data-support]'), p = e.target.closest('[data-profile]');
+  if (s) { const row = ins.data.at_risk.find(r => r.id_number === s.dataset.support); openIvModal({ id: s.dataset.support, name: row && row.name, suggestion: row && row.suggested[0] }); }
+  if (p) openProfile(p.dataset.profile);
+});
+
+/* ---- Learner profile ---- */
+async function openProfile(id) {
+  $('profileBody').innerHTML = '<div class="loader-wrap"><div class="loader"></div></div>'; openOverlay($('profileModal'), $('profileClose'));
+  try {
+    const d = await api('GET', '/learners/' + encodeURIComponent(id));
+    const pts = d.periods.map(p => ({ label: p.label, avg_sba: p.avg_sba, attendance_pct: p.attendance_pct }));
+    $('profileBody').innerHTML = '<h2 style="margin:0 0 4px">' + esc(d.name || 'Learner') + '</h2><p class="sub" style="margin:0 0 14px">' + esc(maskValue(d.id_number)) + ' · ' + riskPill(d.risk.level, d.risk.score) + '</p>' +
+      (pts.length > 1 ? lineChart(pts, [{ key: 'avg_sba', name: 'Average SBA', color: 'var(--primary)' }, { key: 'attendance_pct', name: 'Attendance', color: 'var(--ok)', dash: true }]) : '<p class="cap">Only one term on record.</p>') +
+      '<h4 style="margin:16px 0 6px">Why this risk level</h4>' + (d.risk.factors.length ? '<ul style="margin:0;padding-left:20px;font-size:13.5px">' + d.risk.factors.map(f => '<li>' + esc(f.label) + '</li>').join('') + '</ul>' : '<p class="cap">No risk factors this term.</p>') +
+      (d.suggested.length ? '<h4 style="margin:16px 0 6px">Suggested support</h4>' + d.suggested.map((s, i) => '<div class="rec"><div style="flex:1"><b>' + esc(s.title) + '</b><span class="d">' + esc(s.notes) + '</span></div><button class="btn btn-ghost btn-sm" data-sugg="' + i + '">Use</button></div>').join('') : '') +
+      '<h4 style="margin:16px 0 6px">Interventions (' + d.interventions.length + ')</h4>' + (d.interventions.length ? d.interventions.map(i => '<div class="rec"><span class="pill neutral">' + esc(i.status.replace('_', ' ')) + '</span><div><b>' + esc(i.title) + '</b><span class="d">' + esc(i.notes || '') + '</span></div></div>').join('') : '<p class="cap">None yet.</p>');
+    $('profileBody').onclick = e => { const b = e.target.closest('[data-sugg]'); if (b) { closeOverlay(false); openIvModal({ id: d.id_number, name: d.name, suggestion: d.suggested[+b.dataset.sugg] }); } };
+  } catch (e) { if (e.message !== 'auth') $('profileBody').innerHTML = '<div class="notice"><span>' + esc(e.message) + '</span></div>'; }
+}
+$('profileClose').addEventListener('click', () => closeOverlay());
+
+/* ---- Interventions ---- */
+async function loadInterventions(force) {
+  if (ivs.loading) return;
+  if (ivs.list && !force) { renderInterventions(); return; }
+  ivs.loading = true; ivs.error = ''; renderInterventions();
+  try { ivs.list = (await api('GET', '/interventions')).interventions; }
+  catch (e) { if (e.message !== 'auth') ivs.error = /Failed to fetch|NetworkError/i.test(e.message) ? t('toast.api') : e.message; }
+  ivs.loading = false; if (state.ws === 'interventions') renderInterventions();
+}
+const STATUS_LABEL = { planned: 'Planned', in_progress: 'In progress', completed: 'Completed', cancelled: 'Cancelled' };
+function renderInterventions() {
+  const P = $('ivPanel');
+  if (ivs.loading) { P.innerHTML = '<div class="loader-wrap"><div class="loader"></div><p>Loading interventions…</p></div>'; return; }
+  if (ivs.error) { P.innerHTML = '<div class="notice"><span>' + esc(ivs.error) + '</span><button class="btn btn-ghost btn-sm" id="ivRetry">Try again</button></div>'; $('ivRetry').onclick = () => loadInterventions(true); return; }
+  const all = ivs.list || [], list = ivs.filter ? all.filter(i => i.status === ivs.filter) : all;
+  P.innerHTML = '<div class="p3-head"><div><h3>Interventions</h3><p class="sub" style="margin:2px 0 0;color:var(--muted);font-size:13.5px">Track the support given to learners and how it turns out.</p></div>' +
+    '<div style="display:flex;gap:10px;align-items:center"><select class="sel" id="ivFilter" aria-label="Filter by status"><option value="">All statuses</option>' + Object.keys(STATUS_LABEL).map(k => '<option value="' + k + '"' + (ivs.filter === k ? ' selected' : '') + '>' + STATUS_LABEL[k] + '</option>').join('') + '</select>' +
+    '<button class="btn btn-primary btn-sm" id="ivNew">New intervention</button></div></div>' +
+    (list.length ? list.map(i => '<div class="iv" data-iv="' + i.id + '"><div class="main"><b>' + esc(i.title) + '</b> <span class="pill neutral">' + esc(i.category) + '</span>' +
+      '<div class="meta2">' + esc(i.name || 'Learner') + ' · ' + esc(maskValue(i.id_number)) + (i.year ? ' · started ' + esc(i.year + ' T' + i.term) : '') + (i.due_date ? ' · due ' + esc(i.due_date) : '') + '</div>' +
+      (i.notes ? '<p>' + esc(i.notes) + '</p>' : '') +
+      (i.status === 'completed' || i.status === 'cancelled' ? '<input class="plain" data-outcome placeholder="Outcome (what happened?)" maxlength="1000" value="' + esc(i.outcome || '') + '">' : '') + '</div>' +
+      '<div class="side"><select class="sel" data-status aria-label="Status">' + Object.keys(STATUS_LABEL).map(k => '<option value="' + k + '"' + (i.status === k ? ' selected' : '') + '>' + STATUS_LABEL[k] + '</option>').join('') + '</select>' +
+      '<button class="btn btn-ghost btn-sm" data-del>Delete</button></div></div>').join('') :
+      '<div class="empty">' + (all.length ? 'No interventions with that status.' : 'No interventions yet. Open Insights and use “Add support” on a learner, or create one here.') + '</div>');
+  $('ivFilter').onchange = e => { ivs.filter = e.target.value; renderInterventions(); };
+  $('ivNew').onclick = () => openIvModal({});
+}
+$('ivPanel').addEventListener('change', async e => {
+  const row = e.target.closest('[data-iv]'); if (!row) return; const id = row.dataset.iv;
+  const body = e.target.matches('[data-status]') ? { status: e.target.value } : e.target.matches('[data-outcome]') ? { outcome: e.target.value } : null; if (!body) return;
+  try { const r = await api('PATCH', '/interventions/' + id, body); const i = ivs.list.findIndex(x => String(x.id) === id); if (i >= 0) ivs.list[i] = Object.assign({}, ivs.list[i], r.intervention); ins.data = null; toast('Saved', 'success', 1800); renderInterventions(); }
+  catch (er) { if (er.message !== 'auth') toast(er.message, 'error'); }
+});
+$('ivPanel').addEventListener('click', async e => {
+  if (!e.target.matches('[data-del]')) return; const row = e.target.closest('[data-iv]');
+  if (!confirm('Delete this intervention? This cannot be undone.')) return;
+  try { await api('DELETE', '/interventions/' + row.dataset.iv); ivs.list = ivs.list.filter(x => String(x.id) !== row.dataset.iv); ins.data = null; renderInterventions(); toast('Deleted', 'info', 1800); }
+  catch (er) { if (er.message !== 'auth') toast(er.message, 'error'); }
+});
+
+function openIvModal(o) {
+  $('ivId').value = o.id || ''; $('ivId').readOnly = !!o.id; $('ivTitle').value = o.suggestion ? o.suggestion.title : ''; $('ivCat').value = o.suggestion ? o.suggestion.category : 'Academic';
+  $('ivNotes').value = o.suggestion ? o.suggestion.notes : ''; $('ivDue').value = '';
+  $('ivModalSub').textContent = o.name ? 'For ' + o.name + '. Edit anything below before saving.' : 'Record the support you are giving a learner so you can track whether it works.';
+  openOverlay($('ivModal'), o.id ? $('ivTitle') : $('ivId'));
+}
+$('ivCancel').addEventListener('click', () => closeOverlay());
+$('ivSave').addEventListener('click', async () => {
+  const body = { id_number: $('ivId').value.trim(), title: $('ivTitle').value.trim(), category: $('ivCat').value, notes: $('ivNotes').value.trim(), due_date: $('ivDue').value };
+  if (!/^\d{13}$/.test(body.id_number)) return toast('Enter the learner’s 13-digit ID number.', 'error');
+  if (!body.title) return toast('Describe what will be done.', 'error');
+  const btn = $('ivSave'); btn.disabled = true;
+  try { await api('POST', '/interventions', body); closeOverlay(); ivs.list = null; ins.data = null; toast('Intervention saved', 'success'); if (state.ws === 'insights') loadInsights(); else if (state.ws === 'interventions') loadInterventions(true); }
+  catch (e) { if (e.message !== 'auth') toast(e.message, 'error', 6000); }
+  btn.disabled = false;
+});
+
+$('toInsights').addEventListener('click', () => setWs('insights'));
+
+/* =====================================================================
    Boot
    ===================================================================== */
+/* Keyboard shortcuts (listed in the "?" dialog) */
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeOverlay(); return; }
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   const tag = (e.target.tagName || '').toLowerCase();
   if (['input', 'select', 'textarea'].includes(tag) || e.target.isContentEditable || activeOverlay) return;
+  if ($('registerModal').classList.contains('open')) return; // never act behind the token screen
   const k = e.key.toLowerCase();
   if (e.key === '?') openOverlay(keysModal);
   else if (k === 't') toggleTheme();
   else if (k === 'h' && state.token) { renderHistory(); openOverlay(drawer); }
-  else if (k === 'u' && state.token && state.view === 'upload') fileInput.click();
+  else if (k === 'u' && state.token && state.view === 'upload' && state.ws === 'upload') fileInput.click();
   else if (k === 'r' && state.token && state.view !== 'loading') resetWorkspace();
 });
 

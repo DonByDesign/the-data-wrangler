@@ -1,6 +1,6 @@
 /* The Data Wrangler service worker: caches the app shell only.
    API calls (cross-origin POSTs to the Render backend) are never cached. */
-const CACHE = 'dw-shell-v1';
+const CACHE = 'dw-shell-v2';
 const SHELL = ['./', './index.html', './manifest.webmanifest'];
 
 self.addEventListener('install', e => {
@@ -19,6 +19,6 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     fetch(req)
       .then(res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); return res; })
-      .catch(() => caches.match(req).then(r => r || caches.match('./data-wrangler.html')))
+      .catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
   );
 });
