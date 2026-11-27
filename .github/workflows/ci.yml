@@ -1,0 +1,45 @@
+name: CI
+on:
+  push: { branches: [main] }
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - name: Backend compiles
+        run: python -m py_compile app/main.py
+      - name: Backend tests (fake database and fake model, no secrets needed)
+        run: python tests/test_phase3.py
+      - name: Gemini, CSV parsing, CORS and throttling tests (fake Gemini, no secrets needed)
+        run: python tests/test_gemini.py
+      - name: School Report tests
+        run: python tests/test_report.py
+      - name: Frontend script has no syntax errors
+        run: |
+          node -e "const s=require('fs').readFileSync('frontend/index.html','utf8');const m=[...s.matchAll(/<script>([\s\S]*?)<\/script>/g)];require('fs').writeFileSync('/tmp/chk.js',m[m.length-1][1])"
+          node --check /tmp/chk.js
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: gitleaks/gitleaks-action@v2
+        env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t data-wrangler-api .
+      - uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: data-wrangler-api
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
